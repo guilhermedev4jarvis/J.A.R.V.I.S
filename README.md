@@ -318,3 +318,10 @@ Resumo:
 ---
 
 **Jarvis 1.0** — assistente local, escrita primeiro, programação no centro, voz sob demanda.
+
+para rodar: 
+cd desktop
+python setup.py
+python -m pip install faster-whisper
+python -m playwright install chromium
+python main.py
