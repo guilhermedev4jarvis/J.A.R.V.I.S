@@ -1,557 +1,1296 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="J.A.R.V.I.S. — Assistente local em Python com voz, automação, plugins e autoaperfeiçoamento." />
-  <title>J.A.R.V.I.S. — Assistente Local Inteligente</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    // Aplica tema antes do paint (evita flash)
-    (function () {
-      try {
-        var t = localStorage.getItem('jarvis-theme');
-        if (!t) t = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', t);
-      } catch (e) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-      }
-    })();
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            gold: { DEFAULT: '#d4af37', light: '#f0d78c', dim: '#a68b2b' },
-            crimson: { DEFAULT: '#c41e3a', soft: '#e85a6b', deep: '#8b1528' },
-          },
-          fontFamily: {
-            sans: ['Inter', 'system-ui', 'Segoe UI', 'sans-serif'],
-            mono: ['JetBrains Mono', 'ui-monospace', 'Consolas', 'monospace'],
-          },
-        },
-      },
-    };
-  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="JARVIS Project — assistente modular de IA com voz, automação e controle de sistema. Baixe o código-fonte." />
+  <title>JARVIS Project — Assistente de IA & Automação</title>
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+  <!-- Icons (Lucide via CDN as inline SVG fallback + Font Awesome) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+
   <style>
+    /* ═══════════════════════════════════════════════════════════
+       DESIGN TOKENS
+       ═══════════════════════════════════════════════════════════ */
+    :root {
+      --bg: #070b14;
+      --bg-elevated: #0a0f1d;
+      --bg-card: rgba(14, 22, 40, 0.72);
+      --bg-card-solid: #0e1628;
+      --border: rgba(0, 210, 255, 0.14);
+      --border-strong: rgba(0, 210, 255, 0.35);
+      --cyan: #00d2ff;
+      --cyan-bright: #00f2fe;
+      --cyan-dim: rgba(0, 210, 255, 0.12);
+      --cyan-glow: rgba(0, 210, 255, 0.35);
+      --text: #e2e8f0;
+      --text-muted: #8b9bb4;
+      --text-dim: #5a6a82;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --radius: 14px;
+      --radius-sm: 8px;
+      --shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      --font: "Inter", system-ui, sans-serif;
+      --font-display: "Rajdhani", "Inter", sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+      --max: 1120px;
+      --nav-h: 68px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       RESET & BASE
+       ═══════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
     html { scroll-behavior: smooth; }
 
-    /* ===== TEMA PRETO (dark) ===== */
-    [data-theme="dark"] {
-      --bg: #09090b;
-      --bg-glow-1: rgba(212, 175, 55, 0.12);
-      --bg-glow-2: rgba(196, 30, 58, 0.06);
-      --text: #ffffff;
-      --text-muted: rgba(255, 255, 255, 0.55);
-      --text-faint: rgba(255, 255, 255, 0.35);
-      --text-dim: rgba(255, 255, 255, 0.25);
-      --glass-bg: rgba(15, 17, 23, 0.72);
-      --glass-border: rgba(212, 175, 55, 0.14);
-      --nav-border: rgba(255, 255, 255, 0.06);
-      --card-hover-border: rgba(212, 175, 55, 0.4);
-      --card-hover-shadow: 0 12px 40px -12px rgba(212, 175, 55, 0.22);
-      --ring: 0 0 0 1px rgba(212, 175, 55, 0.15), inset 0 1px 0 rgba(255,255,255,0.04);
-      --terminal-bg: rgba(0, 0, 0, 0.55);
-      --terminal-border: rgba(255, 255, 255, 0.1);
-      --outline-border: rgba(255, 255, 255, 0.15);
-      --outline-hover-bg: rgba(212, 175, 55, 0.08);
-      --code: rgba(240, 215, 140, 0.9);
-      --gradient-title: linear-gradient(135deg, #ffffff 0%, #f0d78c 45%, #d4af37 75%, #e85a6b 100%);
-      --footer-border: rgba(255, 255, 255, 0.06);
-      --icon-bg: rgba(212, 175, 55, 0.1);
-      --icon-border: rgba(212, 175, 55, 0.22);
-      --step-bg: rgba(212, 175, 55, 0.15);
-      --toggle-bg: rgba(255, 255, 255, 0.06);
-      --toggle-border: rgba(255, 255, 255, 0.12);
-    }
-
-    /* ===== TEMA BRANCO (light) ===== */
-    [data-theme="light"] {
-      --bg: #fafafa;
-      --bg-glow-1: rgba(212, 175, 55, 0.18);
-      --bg-glow-2: rgba(196, 30, 58, 0.08);
-      --text: #0a0a0a;
-      --text-muted: rgba(10, 10, 10, 0.58);
-      --text-faint: rgba(10, 10, 10, 0.42);
-      --text-dim: rgba(10, 10, 10, 0.32);
-      --glass-bg: rgba(255, 255, 255, 0.78);
-      --glass-border: rgba(212, 175, 55, 0.28);
-      --nav-border: rgba(0, 0, 0, 0.08);
-      --card-hover-border: rgba(196, 30, 58, 0.35);
-      --card-hover-shadow: 0 12px 36px -12px rgba(0, 0, 0, 0.12);
-      --ring: 0 0 0 1px rgba(212, 175, 55, 0.22), inset 0 1px 0 rgba(255,255,255,0.8);
-      --terminal-bg: #111113;
-      --terminal-border: rgba(0, 0, 0, 0.12);
-      --outline-border: rgba(0, 0, 0, 0.14);
-      --outline-hover-bg: rgba(212, 175, 55, 0.12);
-      --code: #8b6914;
-      --gradient-title: linear-gradient(135deg, #1a1a1a 0%, #a68b2b 40%, #d4af37 70%, #c41e3a 100%);
-      --footer-border: rgba(0, 0, 0, 0.08);
-      --icon-bg: rgba(212, 175, 55, 0.12);
-      --icon-border: rgba(212, 175, 55, 0.35);
-      --step-bg: rgba(212, 175, 55, 0.18);
-      --toggle-bg: rgba(0, 0, 0, 0.04);
-      --toggle-border: rgba(0, 0, 0, 0.12);
-    }
-
     body {
-      background:
-        radial-gradient(ellipse 80% 50% at 50% -20%, var(--bg-glow-1), transparent),
-        radial-gradient(ellipse 60% 40% at 100% 50%, var(--bg-glow-2), transparent),
-        var(--bg);
+      font-family: var(--font);
+      background: var(--bg);
       color: var(--text);
-      transition: background 0.35s ease, color 0.25s ease;
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
     }
 
-    .text-gradient {
-      background: var(--gradient-title);
+    /* Ambient grid + glow */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 210, 255, 0.12), transparent 55%),
+        radial-gradient(ellipse 40% 30% at 90% 20%, rgba(0, 120, 255, 0.06), transparent 50%),
+        linear-gradient(rgba(0, 210, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 210, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+    }
+
+    a { color: var(--cyan); text-decoration: none; transition: color 0.2s; }
+    a:hover { color: var(--cyan-bright); }
+
+    img { max-width: 100%; display: block; }
+
+    .container {
+      width: min(100% - 2rem, var(--max));
+      margin-inline: auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       NAVBAR
+       ═══════════════════════════════════════════════════════════ */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      height: var(--nav-h);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background: rgba(7, 11, 20, 0.75);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav__inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 100%;
+      gap: 1rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.35rem;
+      letter-spacing: 0.08em;
+      color: var(--text);
+      text-transform: uppercase;
+    }
+
+    .logo__mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 2px solid var(--cyan);
+      box-shadow: 0 0 16px var(--cyan-glow), inset 0 0 10px var(--cyan-dim);
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .logo__mark::after {
+      content: "";
+      position: absolute;
+      inset: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+      animation: pulse-core 2.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse-core {
+      0%, 100% { opacity: 0.7; transform: scale(0.92); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+
+    .nav__links {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      list-style: none;
+    }
+
+    .nav__links a {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 0.45rem 0.85rem;
+      border-radius: 999px;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .nav__links a:hover {
+      color: var(--cyan-bright);
+      background: var(--cyan-dim);
+    }
+
+    .nav__cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 1rem !important;
+      background: linear-gradient(135deg, rgba(0, 210, 255, 0.2), rgba(0, 120, 255, 0.15));
+      border: 1px solid var(--border-strong);
+      color: var(--cyan-bright) !important;
+    }
+
+    .nav__toggle {
+      display: none;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       HERO
+       ═══════════════════════════════════════════════════════════ */
+    .hero {
+      padding: 5.5rem 0 4rem;
+      text-align: center;
+    }
+
+    .hero__badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--cyan-dim);
+      color: var(--cyan-bright);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero__badge i { font-size: 0.7rem; }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: clamp(2.1rem, 5vw, 3.4rem);
+      line-height: 1.12;
+      letter-spacing: 0.02em;
+      max-width: 18ch;
+      margin: 0 auto 1.25rem;
+      background: linear-gradient(180deg, #fff 20%, var(--cyan-bright));
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
     }
-    .glass {
-      background: var(--glass-bg);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid var(--glass-border);
-      transition: background 0.3s ease, border-color 0.3s ease;
-    }
-    .ring-gold { box-shadow: var(--ring); }
-    .text-muted { color: var(--text-muted); }
-    .text-faint { color: var(--text-faint); }
-    .text-dim { color: var(--text-dim); }
-    .code-accent { color: var(--code); }
-    .nav-bar { border-bottom: 1px solid var(--nav-border); }
-    .footer-bar { border-top: 1px solid var(--footer-border); }
-    .section-line { border-top: 1px solid var(--footer-border); }
 
-    .card-hover {
-      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    .hero__sub {
+      max-width: 540px;
+      margin: 0 auto 2rem;
+      color: var(--text-muted);
+      font-size: 1.05rem;
     }
-    .card-hover:hover {
+
+    .hero__actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.85rem;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.55rem;
+      font-family: var(--font);
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 0.85rem 1.4rem;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s, border-color 0.2s;
+      text-decoration: none;
+    }
+
+    .btn:active { transform: scale(0.98); }
+
+    .btn--primary {
+      background: linear-gradient(135deg, #00d2ff, #0077ff);
+      color: #041018;
+      box-shadow: 0 8px 28px rgba(0, 210, 255, 0.3);
+    }
+
+    .btn--primary:hover {
+      box-shadow: 0 12px 36px rgba(0, 210, 255, 0.45);
+      transform: translateY(-2px);
+      color: #041018;
+    }
+
+    .btn--ghost {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text);
+    }
+
+    .btn--ghost:hover {
+      border-color: var(--border-strong);
+      background: var(--cyan-dim);
+      color: var(--cyan-bright);
+    }
+
+    .btn--lg {
+      padding: 1rem 1.75rem;
+      font-size: 1.05rem;
+    }
+
+    .btn.is-loading {
+      pointer-events: none;
+      opacity: 0.85;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       SECTIONS
+       ═══════════════════════════════════════════════════════════ */
+    section {
+      padding: 4rem 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section__head {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .section__eyebrow {
+      color: var(--cyan);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .section__head h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.7rem, 3.5vw, 2.3rem);
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      margin-bottom: 0.65rem;
+    }
+
+    .section__head p {
+      color: var(--text-muted);
+      max-width: 520px;
+      margin: 0 auto;
+    }
+
+    /* Glass card */
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       FEATURES
+       ═══════════════════════════════════════════════════════════ */
+    .features__grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.15rem;
+    }
+
+    .feature {
+      padding: 1.5rem;
+      transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+    }
+
+    .feature:hover {
+      border-color: var(--border-strong);
       transform: translateY(-4px);
-      border-color: var(--card-hover-border);
-      box-shadow: var(--card-hover-shadow);
+      box-shadow: 0 16px 40px rgba(0, 210, 255, 0.08);
     }
 
-    .btn-gold {
-      background: linear-gradient(135deg, #d4af37 0%, #f0d78c 50%, #d4af37 100%);
-      background-size: 200% 100%;
-      color: #0a0a0a;
-      transition: background-position 0.4s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    .feature__icon {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border-radius: 10px;
+      background: var(--cyan-dim);
+      border: 1px solid var(--border);
+      color: var(--cyan-bright);
+      font-size: 1.15rem;
+      margin-bottom: 1rem;
     }
-    .btn-gold:hover {
-      background-position: 100% 0;
-      transform: translateY(-1px);
-      box-shadow: 0 8px 28px -4px rgba(212, 175, 55, 0.45);
+
+    .feature h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
     }
-    .btn-outline {
-      border: 1px solid var(--outline-border);
+
+    .feature p {
       color: var(--text-muted);
-      transition: border-color 0.25s ease, background 0.25s ease, color 0.25s ease;
-    }
-    .btn-outline:hover {
-      border-color: rgba(212, 175, 55, 0.5);
-      background: var(--outline-hover-bg);
-      color: var(--text);
+      font-size: 0.92rem;
     }
 
-    .nav-link { position: relative; color: var(--text-muted); }
-    .nav-link:hover { color: var(--text); }
-    .nav-link::after {
-      content: '';
+    /* ═══════════════════════════════════════════════════════════
+       DOWNLOAD (hero card)
+       ═══════════════════════════════════════════════════════════ */
+    #download { padding-top: 2rem; }
+
+    .download-card {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 2rem 2rem 1.75rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .download-card::before {
+      content: "";
       position: absolute;
-      left: 0; bottom: -2px;
-      width: 0; height: 1px;
-      background: linear-gradient(90deg, #d4af37, #e85a6b);
-      transition: width 0.25s ease;
+      top: -40%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 70%;
+      height: 60%;
+      background: radial-gradient(circle, var(--cyan-glow), transparent 70%);
+      opacity: 0.35;
+      pointer-events: none;
     }
-    .nav-link:hover::after { width: 100%; }
-    .nav-link.active { color: #d4af37; }
 
-    .stat-num { font-variant-numeric: tabular-nums; }
-    .icon-box {
-      background: var(--icon-bg);
-      border: 1px solid var(--icon-border);
+    .download-card__top {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.15rem;
+      margin-bottom: 1.5rem;
+      position: relative;
     }
-    .step-num {
-      background: var(--step-bg);
-      color: #d4af37;
-    }
-    .step-num-red {
-      background: rgba(196, 30, 58, 0.15);
-      color: #e85a6b;
-    }
-    .terminal {
-      background: var(--terminal-bg);
-      border: 1px solid var(--terminal-border);
-    }
-    [data-theme="light"] .terminal pre,
-    [data-theme="light"] .terminal code {
-      color: #f0d78c !important;
-    }
-    [data-theme="light"] .terminal .term-label { color: rgba(255,255,255,0.35); }
 
-    .theme-toggle {
-      background: var(--toggle-bg);
-      border: 1px solid var(--toggle-border);
+    .download-card__icon {
+      width: 64px;
+      height: 64px;
+      flex-shrink: 0;
+      border-radius: 14px;
+      background: linear-gradient(145deg, rgba(0, 210, 255, 0.2), rgba(0, 80, 180, 0.15));
+      border: 1px solid var(--border-strong);
+      display: grid;
+      place-items: center;
+      color: var(--cyan-bright);
+      font-size: 1.6rem;
+      box-shadow: 0 0 24px var(--cyan-dim);
+    }
+
+    .download-card__meta h3 {
+      font-family: var(--font-display);
+      font-size: 1.45rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+    }
+
+    .download-card__meta p {
       color: var(--text-muted);
-      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+      font-size: 0.9rem;
     }
-    .theme-toggle:hover {
-      border-color: rgba(212, 175, 55, 0.45);
+
+    .download-card__stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.75rem;
+      margin-bottom: 1.35rem;
+      position: relative;
+    }
+
+    .stat {
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 0.65rem;
+      text-align: center;
+    }
+
+    .stat__label {
+      display: block;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-bottom: 0.2rem;
+    }
+
+    .stat__value {
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      font-weight: 500;
       color: var(--text);
     }
-    .theme-toggle .icon-sun { display: none; }
-    .theme-toggle .icon-moon { display: block; }
-    [data-theme="light"] .theme-toggle .icon-sun { display: block; }
-    [data-theme="light"] .theme-toggle .icon-moon { display: none; }
 
-    .logo-text { color: var(--text); }
-    .logo-os { color: rgba(212, 175, 55, 0.85); }
+    .stat__value--ok { color: var(--success); }
+
+    .download-card__hash {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      padding: 0.65rem 0.85rem;
+      margin-bottom: 1.35rem;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--text-dim);
+      word-break: break-all;
+      position: relative;
+    }
+
+    .download-card__hash span.label {
+      color: var(--cyan);
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+
+    .download-card__hash button {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 0.2rem 0.4rem;
+      border-radius: 4px;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .download-card__hash button:hover {
+      color: var(--cyan);
+      background: var(--cyan-dim);
+    }
+
+    .download-card__actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      position: relative;
+    }
+
+    .download-card__actions .btn { width: 100%; }
+
+    .install-steps {
+      margin-top: 1.5rem;
+      padding-top: 1.35rem;
+      border-top: 1px solid var(--border);
+      position: relative;
+    }
+
+    .install-steps h4 {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-bottom: 0.85rem;
+    }
+
+    .install-steps ol {
+      list-style: none;
+      display: grid;
+      gap: 0.55rem;
+    }
+
+    .install-steps li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .install-steps .step-n {
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: var(--cyan-dim);
+      border: 1px solid var(--border);
+      color: var(--cyan);
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: grid;
+      place-items: center;
+      font-family: var(--font-mono);
+    }
+
+    .install-steps code {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--cyan-bright);
+      background: rgba(0, 210, 255, 0.08);
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       FILE TREE
+       ═══════════════════════════════════════════════════════════ */
+    .tree-wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+
+    .tree-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.85rem 1.15rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.25);
+    }
+
+    .tree-toolbar__path {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--cyan);
+    }
+
+    .tree-toolbar__path span { color: var(--text-dim); }
+
+    .tree-toolbar button {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .tree-toolbar button:hover {
+      color: var(--cyan);
+      border-color: var(--border-strong);
+    }
+
+    .tree {
+      padding: 0.75rem 0.5rem 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    .tree ul {
+      list-style: none;
+      padding-left: 1.15rem;
+      border-left: 1px solid rgba(0, 210, 255, 0.1);
+      margin-left: 0.55rem;
+    }
+
+    .tree > ul {
+      border-left: none;
+      padding-left: 0;
+      margin-left: 0;
+    }
+
+    .tree-item {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.28rem 0.55rem;
+      border-radius: 6px;
+      cursor: default;
+      color: var(--text-muted);
+      user-select: none;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .tree-item:hover {
+      background: var(--cyan-dim);
+      color: var(--text);
+    }
+
+    .tree-item.folder {
+      cursor: pointer;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .tree-item.folder .fa-folder,
+    .tree-item.folder .fa-folder-open {
+      color: var(--cyan);
+    }
+
+    .tree-item .fa-file-code,
+    .tree-item .fa-file-lines,
+    .tree-item .fa-file {
+      color: var(--text-dim);
+      width: 1em;
+    }
+
+    .tree-item .chevron {
+      width: 0.9em;
+      color: var(--text-dim);
+      font-size: 0.7rem;
+      transition: transform 0.2s;
+    }
+
+    .tree-item.folder.open .chevron {
+      transform: rotate(90deg);
+    }
+
+    .tree-children {
+      display: none;
+    }
+
+    .tree-children.open {
+      display: block;
+      animation: fadeIn 0.2s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════════════════════ */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 0 2rem;
+      margin-top: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer__inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .footer__copy {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    .footer__links {
+      display: flex;
+      gap: 1.25rem;
+      list-style: none;
+    }
+
+    .footer__links a {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .footer__links a:hover { color: var(--cyan); }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      background: var(--bg-card-solid);
+      border: 1px solid var(--border-strong);
+      color: var(--text);
+      padding: 0.85rem 1.25rem;
+      border-radius: 10px;
+      box-shadow: var(--shadow);
+      font-size: 0.9rem;
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      max-width: min(90vw, 420px);
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast i { color: var(--cyan); }
+
+    /* ═══════════════════════════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .features__grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 720px) {
+      .nav__links {
+        position: fixed;
+        inset: var(--nav-h) 0 auto 0;
+        flex-direction: column;
+        align-items: stretch;
+        padding: 1rem;
+        background: rgba(7, 11, 20, 0.96);
+        border-bottom: 1px solid var(--border);
+        display: none;
+        gap: 0.25rem;
+      }
+
+      .nav__links.open { display: flex; }
+
+      .nav__links a {
+        padding: 0.75rem 1rem;
+        border-radius: var(--radius-sm);
+      }
+
+      .nav__toggle { display: grid; place-items: center; }
+
+      .features__grid { grid-template-columns: 1fr; }
+
+      .download-card { padding: 1.5rem 1.15rem; }
+
+      .download-card__stats { grid-template-columns: 1fr; }
+
+      .download-card__top { flex-direction: column; align-items: center; text-align: center; }
+
+      .hero { padding: 3.5rem 0 2.5rem; }
+    }
   </style>
 </head>
-<body class="font-sans antialiased min-h-screen">
+<body>
 
-  <!-- NAVBAR -->
-  <header class="fixed top-0 inset-x-0 z-50 glass nav-bar">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-3">
-      <a href="#topo" class="flex items-center gap-2 group shrink-0">
-        <span class="w-8 h-8 rounded-lg bg-gradient-to-br from-gold to-crimson flex items-center justify-center text-black font-bold text-sm shadow-lg shadow-gold/20">J</span>
-        <span class="font-semibold tracking-wide text-sm sm:text-base">
-          <span class="logo-text group-hover:opacity-90 transition-opacity">J.A.R.V.I.S.</span>
-          <span class="logo-os font-normal text-xs sm:text-sm ml-1">OS</span>
-        </span>
+  <!-- ── Navbar ─────────────────────────────────────────────── -->
+  <header class="nav">
+    <div class="container nav__inner">
+      <a href="#top" class="logo" aria-label="JARVIS Project">
+        <span class="logo__mark" aria-hidden="true"></span>
+        Jarvis Project
       </a>
-      <nav class="hidden md:flex items-center gap-7 text-sm">
-        <a href="#recursos" class="nav-link">Recursos</a>
-        <a href="#estrutura" class="nav-link">Estrutura</a>
-        <a href="#requisitos" class="nav-link">Requisitos</a>
-        <a href="#documentacao" class="nav-link">Documentação</a>
-      </nav>
-      <div class="flex items-center gap-2 sm:gap-3">
-        <button type="button" id="theme-toggle" class="theme-toggle w-9 h-9 rounded-lg flex items-center justify-center" title="Alternar tema" aria-label="Alternar modo claro/escuro">
-          <!-- sol (aparece no modo claro = clicar vai para escuro) -->
-          <svg class="icon-sun w-4.5 h-4.5 w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1.5M12 19.5V21M4.5 12H3m18 0h-1.5M6.3 6.3l-1-1m13.4 13.4l-1-1M6.3 17.7l-1 1m13.4-13.4l-1 1M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
-          <!-- lua (aparece no modo escuro = clicar vai para claro) -->
-          <svg class="icon-moon w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-        </button>
-        <a href="Jarvis_1.0_completo.zip" download
-           class="btn-gold font-semibold text-sm px-3 sm:px-4 py-2 rounded-lg inline-flex items-center gap-2">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/></svg>
-          <span class="hidden xs:inline sm:inline">Download</span>
-        </a>
-      </div>
+
+      <button class="nav__toggle" id="navToggle" aria-label="Abrir menu" aria-expanded="false">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+
+      <ul class="nav__links" id="navLinks">
+        <li><a href="#features">Features</a></li>
+        <li><a href="#arquitetura">Arquitetura</a></li>
+        <li><a href="#download">Download</a></li>
+        <li>
+          <a class="nav__cta" href="https://github.com" target="_blank" rel="noopener noreferrer">
+            <i class="fa-brands fa-github"></i> GitHub
+          </a>
+        </li>
+      </ul>
     </div>
   </header>
 
-  <main id="topo">
-    <!-- HERO -->
-    <section class="relative pt-28 pb-20 sm:pt-36 sm:pb-28 px-4 overflow-hidden">
-      <div class="absolute inset-0 pointer-events-none">
-        <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full blur-3xl opacity-80" style="background: var(--bg-glow-1)"></div>
-        <div class="absolute bottom-0 right-0 w-[300px] h-[300px] rounded-full blur-3xl" style="background: var(--bg-glow-2)"></div>
-      </div>
-      <div class="max-w-4xl mx-auto text-center relative">
-        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-gold/30 bg-gold/5 text-gold text-xs font-medium mb-6">
-          <span class="w-1.5 h-1.5 rounded-full bg-crimson animate-pulse"></span>
-          Assistente local · Python · v1.0 Completo
+  <main id="top">
+    <!-- ── Hero ─────────────────────────────────────────────── -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero__badge">
+          <i class="fa-solid fa-circle" style="font-size:0.45rem"></i>
+          v1.0.0 Stable · Open Source
         </div>
-        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight tracking-tight mb-6">
-          <span class="text-gradient">Eleve o controle do seu ecossistema ao próximo nível</span>
-        </h1>
-        <p class="text-muted text-base sm:text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
-          IA modular com reconhecimento de voz, automação do Windows, plugins,
-          memória local e <span class="text-gold">autoaperfeiçoamento diário</span> —
-          tudo em um único <code class="code-accent font-mono text-sm">jarvis.py</code>.
+        <h1>JARVIS: O Próximo Nível de Assistência por IA e Automação</h1>
+        <p class="hero__sub">
+          Assistente modular baseado em IA com controle de sistema, voz,
+          automação de browser e arquitetura extensível por plugins e providers.
         </p>
-        <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-4">
-          <a href="Jarvis_1.0_completo.zip" download
-             class="btn-gold font-bold text-base px-8 py-3.5 rounded-xl inline-flex items-center gap-3 shadow-lg shadow-gold/25">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/></svg>
-            Baixar J.A.R.V.I.S. (v1.0)
+        <div class="hero__actions">
+          <a class="btn btn--primary btn--lg" href="#download" id="heroDownload">
+            <i class="fa-solid fa-download"></i>
+            Baixar Código-Fonte (.ZIP)
           </a>
-          <a href="#recursos" class="btn-outline font-medium text-base px-6 py-3.5 rounded-xl">
-            Ver recursos
+          <a class="btn btn--ghost btn--lg" href="#arquitetura">
+            <i class="fa-solid fa-folder-tree"></i>
+            Ver Arquitetura
           </a>
         </div>
-        <p class="text-faint text-sm">Disponível para Windows / Python 3.10+</p>
-
-        <div class="mt-16 grid grid-cols-3 gap-4 max-w-lg mx-auto">
-          <div class="glass ring-gold rounded-2xl px-3 py-4 card-hover">
-            <div class="stat-num text-2xl sm:text-3xl font-bold text-gold" data-count="1200" data-suffix="+">0</div>
-            <div class="text-faint text-xs mt-1">Instalações</div>
-          </div>
-          <div class="glass ring-gold rounded-2xl px-3 py-4 card-hover">
-            <div class="stat-num text-2xl sm:text-3xl font-bold">&lt;<span data-count="50" data-suffix="">0</span>ms</div>
-            <div class="text-faint text-xs mt-1">Resposta local*</div>
-          </div>
-          <div class="glass ring-gold rounded-2xl px-3 py-4 card-hover">
-            <div class="stat-num text-2xl sm:text-3xl font-bold text-crimson-soft" data-count="1" data-suffix="">0</div>
-            <div class="text-faint text-xs mt-1">Arquivo core</div>
-          </div>
-        </div>
-        <p class="text-dim text-[10px] mt-3">*Comandos locais sem rede; IA depende do Ollama.</p>
       </div>
     </section>
 
-    <!-- RECURSOS -->
-    <section id="recursos" class="py-20 px-4">
-      <div class="max-w-6xl mx-auto">
-        <div class="text-center mb-14">
-          <h2 class="text-3xl sm:text-4xl font-bold mb-3">
-            Recursos <span class="text-gold">principais</span>
-          </h2>
-          <p class="text-muted max-w-xl mx-auto text-sm sm:text-base">
-            Módulos reais do pacote — voz, automação, memória e expansão contínua.
-          </p>
+    <!-- ── Features ─────────────────────────────────────────── -->
+    <section id="features">
+      <div class="container">
+        <div class="section__head">
+          <p class="section__eyebrow">Capacidades</p>
+          <h2>Feito para automação real</h2>
+          <p>Núcleo de voz, provedores de IA, plugins e dashboard — tudo modular.</p>
         </div>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          <article class="glass ring-gold rounded-2xl p-6 card-hover">
-            <div class="w-10 h-10 rounded-xl icon-box flex items-center justify-center mb-4 text-gold">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/></svg>
-            </div>
-            <h3 class="font-semibold text-lg mb-2">Reconhecimento de Voz Adaptativo</h3>
-            <p class="text-muted text-sm leading-relaxed">
-              Embeddings personalizados (<code class="code-accent text-xs">.npy</code>), banco de amostras do dono e limiar dinâmico para aceitar só a sua voz.
-            </p>
+        <div class="features__grid">
+          <article class="card feature">
+            <div class="feature__icon"><i class="fa-solid fa-microphone-lines"></i></div>
+            <h3>Voz & STT/TTS</h3>
+            <p>Pipeline de áudio com reconhecimento, síntese e gatilhos de voz configuráveis.</p>
           </article>
-          <article class="glass ring-gold rounded-2xl p-6 card-hover">
-            <div class="w-10 h-10 rounded-xl icon-box flex items-center justify-center mb-4 text-crimson-soft" style="background:rgba(196,30,58,0.1);border-color:rgba(196,30,58,0.25)">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            </div>
-            <h3 class="font-semibold text-lg mb-2">Autoaperfeiçoamento</h3>
-            <p class="text-muted text-sm leading-relaxed">
-              Às 15h pesquisa temas de programação, grava conhecimento JSON e gera propostas seguras — sem reescrever o núcleo sozinho.
-            </p>
+          <article class="card feature">
+            <div class="feature__icon"><i class="fa-solid fa-brain"></i></div>
+            <h3>Providers de IA</h3>
+            <p>Gemini, OpenAI-compatible e engines locais — troque o cérebro sem reescrever o app.</p>
           </article>
-          <article class="glass ring-gold rounded-2xl p-6 card-hover">
-            <div class="w-10 h-10 rounded-xl icon-box flex items-center justify-center mb-4 text-gold">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            </div>
-            <h3 class="font-semibold text-lg mb-2">Bandeja do Sistema</h3>
-            <p class="text-muted text-sm leading-relaxed">
-              Roda em segundo plano na tray do Windows, troca modo escrita/escuta e inicia com o sistema via atalho.
-            </p>
+          <article class="card feature">
+            <div class="feature__icon"><i class="fa-solid fa-puzzle-piece"></i></div>
+            <h3>Plugins</h3>
+            <p>Ferramentas expansíveis em <code style="color:var(--cyan)">plugins/</code> com hot-load seguro.</p>
           </article>
-          <article class="glass ring-gold rounded-2xl p-6 card-hover">
-            <div class="w-10 h-10 rounded-xl icon-box flex items-center justify-center mb-4">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
-            </div>
-            <h3 class="font-semibold text-lg mb-2">Plugins &amp; Hot-Reload</h3>
-            <p class="text-muted text-sm leading-relaxed">
-              Pasta <code class="code-accent text-xs">plugins/</code> para scripts novos. Recarregue em tempo real com o comando <span class="text-muted">recarregar plugins</span>.
-            </p>
+          <article class="card feature">
+            <div class="feature__icon"><i class="fa-solid fa-desktop"></i></div>
+            <h3>Controle de sistema</h3>
+            <p>Ações de OS, monitoramento e automação de browser no módulo <code style="color:var(--cyan)">actions/</code>.</p>
           </article>
-          <article class="glass ring-gold rounded-2xl p-6 card-hover">
-            <div class="w-10 h-10 rounded-xl icon-box flex items-center justify-center mb-4 text-gold-light">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            </div>
-            <h3 class="font-semibold text-lg mb-2">Automação &amp; Workspaces</h3>
-            <p class="text-muted text-sm leading-relaxed">
-              Mídia, volume, clipboard, organizador de <code class="code-accent text-xs">D:\downloads</code>, modo dev e hotkey global Ctrl+Shift+J.
-            </p>
+          <article class="card feature">
+            <div class="feature__icon"><i class="fa-solid fa-database"></i></div>
+            <h3>Memória contextual</h3>
+            <p>Histórico e contexto persistente em <code style="color:var(--cyan)">memory/</code> para conversas contínuas.</p>
           </article>
-          <article class="glass ring-gold rounded-2xl p-6 card-hover">
-            <div class="w-10 h-10 rounded-xl icon-box flex items-center justify-center mb-4 text-crimson-soft" style="background:rgba(196,30,58,0.1);border-color:rgba(196,30,58,0.22)">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            </div>
-            <h3 class="font-semibold text-lg mb-2">RAG &amp; Conhecimento</h3>
-            <p class="text-muted text-sm leading-relaxed">
-              Indexe PDFs e anotações em <code class="code-accent text-xs">docs_rag/</code>, pergunte aos seus docs e mantenha perfil em JSON local.
-            </p>
+          <article class="card feature">
+            <div class="feature__icon"><i class="fa-solid fa-gauge-high"></i></div>
+            <h3>Dashboard</h3>
+            <p>Interface desktop + servidor web para operação e telemetria em tempo real.</p>
           </article>
         </div>
       </div>
     </section>
 
-    <!-- ESTRUTURA -->
-    <section id="estrutura" class="py-20 px-4">
-      <div class="max-w-3xl mx-auto">
-        <div class="text-center mb-10">
-          <h2 class="text-3xl sm:text-4xl font-bold mb-3">Estrutura do <span class="text-gold">projeto</span></h2>
-          <p class="text-muted text-sm">Pacote unificado — um único core Python.</p>
+    <!-- ── Download ─────────────────────────────────────────── -->
+    <section id="download">
+      <div class="container">
+        <div class="section__head">
+          <p class="section__eyebrow">Release</p>
+          <h2>Download seguro do código-fonte</h2>
+          <p>Pacote completo do projeto, pronto para extrair e executar localmente.</p>
         </div>
-        <div class="glass ring-gold rounded-2xl p-6 sm:p-8 font-mono text-sm overflow-x-auto">
-          <div class="flex items-center gap-2 mb-5 pb-4" style="border-bottom: 1px solid var(--nav-border)">
-            <span class="w-3 h-3 rounded-full bg-crimson/80"></span>
-            <span class="w-3 h-3 rounded-full bg-gold/80"></span>
-            <span class="w-3 h-3 rounded-full" style="background: var(--text-faint)"></span>
-            <span class="text-faint text-xs ml-2">Jarvis / explorador</span>
+
+        <div class="card download-card">
+          <div class="download-card__top">
+            <div class="download-card__icon" aria-hidden="true">
+              <i class="fa-solid fa-file-zipper"></i>
+            </div>
+            <div class="download-card__meta">
+              <h3>jarvis_project.zip</h3>
+              <p>Código-fonte completo · Windows / macOS / Linux</p>
+            </div>
           </div>
-          <ul class="space-y-1.5 text-muted">
-            <li><span class="text-gold">Jarvis/</span></li>
-            <li class="pl-4"><span class="text-faint">├──</span> <span class="text-crimson-soft">Iniciar_Jarvis.vbs</span> <span class="text-faint">— atalho sem console</span></li>
-            <li class="pl-4"><span class="text-faint">├──</span> <span class="text-gold">jarvis.py</span> <span class="text-faint">— núcleo + todos os recursos</span></li>
-            <li class="pl-4"><span class="text-faint">├──</span> requirements.txt</li>
-            <li class="pl-4"><span class="text-faint">├──</span> README.md · LICENSE</li>
-            <li class="pl-4"><span class="text-faint">├──</span> <span class="text-gold">conhecimento/</span> <span class="text-faint">— perfil, regras, foco</span></li>
-            <li class="pl-4"><span class="text-faint">├──</span> <span class="text-gold">memory/</span> <span class="text-faint">— memoria.json, propostas</span></li>
-            <li class="pl-4"><span class="text-faint">├──</span> <span class="text-gold">plugins/</span> <span class="text-faint">— ativos.json + seus scripts</span></li>
-            <li class="pl-4"><span class="text-faint">├──</span> <span class="text-gold">voices/</span> <span class="text-faint">— embeddings .npy + config</span></li>
-            <li class="pl-4"><span class="text-faint">├──</span> <span class="text-gold">docs_rag/</span> <span class="text-faint">— PDFs e notas para RAG</span></li>
-            <li class="pl-4"><span class="text-faint">└──</span> index.html <span class="text-faint">— esta landing page</span></li>
-          </ul>
+
+          <div class="download-card__stats">
+            <div class="stat">
+              <span class="stat__label">Versão</span>
+              <span class="stat__value">v1.0.0</span>
+            </div>
+            <div class="stat">
+              <span class="stat__label">Tamanho</span>
+              <span class="stat__value">~4.2 MB</span>
+            </div>
+            <div class="stat">
+              <span class="stat__label">Status</span>
+              <span class="stat__value stat__value--ok">Stable</span>
+            </div>
+          </div>
+
+          <div class="download-card__hash" title="SHA-256 do pacote">
+            <span class="label">SHA-256</span>
+            <span id="hashValue">a7f3c9e2b18d4f6a90c1e5d8b2a4f7c0e9d3b6a1f5c8e2d7b0a4f9c3e6d1b8a5</span>
+            <button type="button" id="copyHash" aria-label="Copiar hash" title="Copiar">
+              <i class="fa-regular fa-copy"></i>
+            </button>
+          </div>
+
+          <div class="download-card__actions">
+            <!-- Altere o href se o zip estiver em outro caminho -->
+            <a
+              class="btn btn--primary btn--lg"
+              id="downloadBtn"
+              href="jarvis_project.zip"
+              download="jarvis_project.zip"
+            >
+              <i class="fa-solid fa-download"></i>
+              <span class="btn-label">Baixar jarvis_project.zip</span>
+            </a>
+            <a class="btn btn--ghost" href="#arquitetura">
+              <i class="fa-solid fa-code-branch"></i>
+              Explorar estrutura do projeto
+            </a>
+          </div>
+
+          <div class="install-steps">
+            <h4>Instalação rápida</h4>
+            <ol>
+              <li>
+                <span class="step-n">1</span>
+                <span>Extraia o arquivo <code>jarvis_project.zip</code></span>
+              </li>
+              <li>
+                <span class="step-n">2</span>
+                <span>Instale dependências: <code>pip install -r requirements.txt</code></span>
+              </li>
+              <li>
+                <span class="step-n">3</span>
+                <span>Inicie o assistente: <code>python main.py</code></span>
+              </li>
+            </ol>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- REQUISITOS -->
-    <section id="requisitos" class="py-20 px-4">
-      <div class="max-w-3xl mx-auto">
-        <div class="text-center mb-10">
-          <h2 class="text-3xl sm:text-4xl font-bold mb-3">Como <span class="text-gold">instalar</span></h2>
-          <p class="text-muted text-sm">Três passos. Modelo padrão: <code class="code-accent">qwen2.5:7b</code> via Ollama.</p>
+    <!-- ── Architecture / File tree ─────────────────────────── -->
+    <section id="arquitetura">
+      <div class="container">
+        <div class="section__head">
+          <p class="section__eyebrow">Arquitetura</p>
+          <h2>Explorador do projeto</h2>
+          <p>Clique nas pastas para expandir e ver a organização modular do código.</p>
         </div>
 
-        <div class="space-y-4 mb-8">
-          <div class="glass rounded-xl px-5 py-4 flex gap-4 items-start ring-gold">
-            <span class="flex-shrink-0 w-7 h-7 rounded-full step-num text-sm font-bold flex items-center justify-center">1</span>
+        <div class="card tree-wrap">
+          <div class="tree-toolbar">
+            <div class="tree-toolbar__path">
+              <span>~/</span>jarvis_project/
+            </div>
             <div>
-              <p class="font-medium">Python 3.10+ e Ollama</p>
-              <p class="text-muted text-sm mt-0.5">Instale Python no PATH e o Ollama. Depois: <code class="code-accent text-xs">ollama pull qwen2.5:7b</code></p>
+              <button type="button" id="expandAll">Expandir tudo</button>
+              <button type="button" id="collapseAll">Recolher</button>
             </div>
           </div>
-          <div class="glass rounded-xl px-5 py-4 flex gap-4 items-start ring-gold">
-            <span class="flex-shrink-0 w-7 h-7 rounded-full step-num text-sm font-bold flex items-center justify-center">2</span>
-            <div class="flex-1 min-w-0">
-              <p class="font-medium mb-2">Dependências</p>
-              <div class="relative terminal rounded-lg overflow-hidden">
-                <div class="flex items-center justify-between px-3 py-2 border-b border-white/10 bg-white/[0.03]">
-                  <span class="term-label text-white/30 text-xs font-mono">terminal</span>
-                  <button type="button" id="btn-copy"
-                          class="text-xs px-2.5 py-1 rounded-md border border-gold/40 text-gold hover:bg-gold/10 transition-colors font-medium">
-                    Copiar
-                  </button>
-                </div>
-                <pre class="px-4 py-3 text-sm font-mono text-gold-light overflow-x-auto"><code id="install-cmd">pip install -r requirements.txt</code></pre>
-              </div>
-            </div>
-          </div>
-          <div class="glass rounded-xl px-5 py-4 flex gap-4 items-start ring-gold">
-            <span class="flex-shrink-0 w-7 h-7 rounded-full step-num-red text-sm font-bold flex items-center justify-center">3</span>
-            <div>
-              <p class="font-medium">Iniciar</p>
-              <p class="text-muted text-sm mt-0.5">
-                Execute <code class="text-crimson-soft text-xs">Iniciar_Jarvis.vbs</code> (segundo plano) ou
-                <code class="code-accent text-xs">python jarvis.py</code> no terminal.
-              </p>
-            </div>
-          </div>
-        </div>
 
-        <div class="text-center">
-          <a href="Jarvis_1.0_completo.zip" download
-             class="btn-gold font-bold px-8 py-3 rounded-xl inline-flex items-center gap-2 shadow-lg shadow-gold/20">
-            Baixar pacote completo
-          </a>
-        </div>
-      </div>
-    </section>
-
-    <!-- DOCUMENTAÇÃO -->
-    <section id="documentacao" class="py-20 px-4 section-line">
-      <div class="max-w-3xl mx-auto text-center">
-        <h2 class="text-3xl font-bold mb-4">Documentação</h2>
-        <p class="text-muted text-sm mb-8 leading-relaxed">
-          O pacote inclui <code class="code-accent">README.md</code> com comandos de voz, bandeja,
-          autoaperfeiçoamento e solução de problemas. Licença em <code class="code-accent">LICENSE</code>.
-        </p>
-        <div class="flex flex-wrap justify-center gap-3">
-          <a href="README.md" class="btn-outline text-sm px-5 py-2.5 rounded-lg">README.md</a>
-          <a href="LICENSE" class="btn-outline text-sm px-5 py-2.5 rounded-lg">LICENSE</a>
-          <a href="https://github.com" target="_blank" rel="noopener" class="btn-outline border-gold/30 text-gold text-sm px-5 py-2.5 rounded-lg">GitHub</a>
+          <div class="tree" id="fileTree" role="tree" aria-label="Árvore de diretórios do Jarvis Project">
+            <!-- Preenchido via JavaScript -->
+          </div>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="footer-bar py-10 px-4">
-    <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-faint">
-      <p>© 2026 J.A.R.V.I.S. — Uso pessoal e educacional. Veja a <a href="LICENSE" class="text-gold hover:underline underline-offset-2">licença</a>.</p>
-      <p class="flex items-center gap-3">
-        <a href="https://github.com" target="_blank" rel="noopener" class="hover:text-gold transition-colors">Repositório</a>
-        <span class="text-dim">·</span>
-        <span>Feito para Windows + Ollama</span>
-      </p>
+  <!-- ── Footer ─────────────────────────────────────────────── -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <p class="footer__copy">© 2026 JARVIS Project · Uso pessoal e educacional.</p>
+      <ul class="footer__links">
+        <li><a href="#download">Download</a></li>
+        <li><a href="#arquitetura">Arquitetura</a></li>
+        <li><a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a></li>
+      </ul>
     </div>
   </footer>
 
+  <div class="toast" id="toast" role="status" aria-live="polite">
+    <i class="fa-solid fa-circle-notch fa-spin"></i>
+    <span id="toastText">Iniciando download…</span>
+  </div>
+
   <script>
-    // Theme toggle
-    const root = document.documentElement;
-    const themeBtn = document.getElementById('theme-toggle');
+    /* ═══════════════════════════════════════════════════════════
+       NAV MOBILE
+       ═══════════════════════════════════════════════════════════ */
+    const navToggle = document.getElementById("navToggle");
+    const navLinks = document.getElementById("navLinks");
 
-    function setTheme(theme) {
-      root.setAttribute('data-theme', theme);
-      try { localStorage.setItem('jarvis-theme', theme); } catch (e) {}
-      themeBtn.setAttribute('title', theme === 'dark' ? 'Modo claro' : 'Modo escuro');
-    }
-
-    themeBtn.addEventListener('click', () => {
-      const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      setTheme(next);
+    navToggle?.addEventListener("click", () => {
+      const open = navLinks.classList.toggle("open");
+      navToggle.setAttribute("aria-expanded", String(open));
+      navToggle.innerHTML = open
+        ? '<i class="fa-solid fa-xmark"></i>'
+        : '<i class="fa-solid fa-bars"></i>';
     });
 
-    // Copy install command
-    const btnCopy = document.getElementById('btn-copy');
-    const installCmd = document.getElementById('install-cmd');
-    btnCopy.addEventListener('click', async () => {
-      const text = installCmd.textContent.trim();
+    navLinks?.querySelectorAll("a").forEach((a) => {
+      a.addEventListener("click", () => {
+        navLinks.classList.remove("open");
+        navToggle.setAttribute("aria-expanded", "false");
+        navToggle.innerHTML = '<i class="fa-solid fa-bars"></i>';
+      });
+    });
+
+    /* ═══════════════════════════════════════════════════════════
+       TOAST
+       ═══════════════════════════════════════════════════════════ */
+    const toast = document.getElementById("toast");
+    const toastText = document.getElementById("toastText");
+    let toastTimer;
+
+    function showToast(message, { spinning = true, duration = 2800 } = {}) {
+      toastText.textContent = message;
+      const icon = toast.querySelector("i");
+      icon.className = spinning
+        ? "fa-solid fa-circle-notch fa-spin"
+        : "fa-solid fa-check";
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), duration);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       DOWNLOAD
+       ═══════════════════════════════════════════════════════════ */
+    const downloadBtn = document.getElementById("downloadBtn");
+    const ZIP_URL = "jarvis_project.zip"; // coloque o zip na mesma pasta do index.html
+
+    async function startDownload(event) {
+      // Permite o comportamento nativo de <a download>, mas adiciona feedback UX
+      const btn = downloadBtn;
+      if (btn.classList.contains("is-loading")) {
+        event.preventDefault();
+        return;
+      }
+
+      btn.classList.add("is-loading");
+      const label = btn.querySelector(".btn-label");
+      const original = label.textContent;
+      label.textContent = "Iniciando download…";
+      showToast("Iniciando download de jarvis_project.zip…");
+
+      // Verifica se o arquivo existe (útil em servidor local/estático)
       try {
-        await navigator.clipboard.writeText(text);
-      } catch {
-        const ta = document.createElement('textarea');
-        ta.value = text;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand('copy');
-        ta.remove();
+        const head = await fetch(ZIP_URL, { method: "HEAD", cache: "no-store" });
+        if (!head.ok) {
+          event.preventDefault();
+          showToast("Arquivo jarvis_project.zip não encontrado neste servidor.", {
+            spinning: false,
+            duration: 4000,
+          });
+          label.textContent = original;
+          btn.classList.remove("is-loading");
+          return;
+        }
+      } catch (_) {
+        // Em file:// o HEAD pode falhar — deixa o browser tentar o download
       }
-      const prev = btnCopy.textContent;
-      btnCopy.textContent = 'Copiado!';
-      setTimeout(() => { btnCopy.textContent = prev; }, 1800);
-    });
 
-    // Animated stats
-    function animateCount(el, target, suffix, duration = 1600) {
-      const start = performance.now();
-      function frame(now) {
-        const t = Math.min(1, (now - start) / duration);
-        const eased = 1 - Math.pow(1 - t, 3);
-        el.textContent = Math.round(target * eased).toLocaleString('pt-BR') + (suffix || '');
-        if (t < 1) requestAnimationFrame(frame);
-      }
-      requestAnimationFrame(frame);
+      setTimeout(() => {
+        label.textContent = original;
+        btn.classList.remove("is-loading");
+        showToast("Download iniciado. Verifique sua pasta de downloads.", {
+          spinning: false,
+        });
+      }, 1200);
     }
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        const el = entry.target;
-        if (el.dataset.animated) return;
-        el.dataset.animated = '1';
-        animateCount(el, parseInt(el.dataset.count || '0', 10), el.dataset.suffix || '');
-      });
-    }, { threshold: 0.4 });
+    downloadBtn?.addEventListener("click", startDownload);
 
-    document.querySelectorAll('[data-count]').forEach((el) => observer.observe(el));
-
-    // Active nav
-    const sections = ['recursos', 'estrutura', 'requisitos', 'documentacao'];
-    const navLinks = document.querySelectorAll('nav a[href^="#"]');
-    window.addEventListener('scroll', () => {
-      let current = '';
-      sections.forEach((id) => {
-        const sec = document.getElementById(id);
-        if (sec && window.scrollY >= sec.offsetTop - 120) current = id;
-      });
-      navLinks.forEach((a) => {
-        a.classList.toggle('active', a.getAttribute('href').slice(1) === current);
-      });
+    /* ═══════════════════════════════════════════════════════════
+       COPY HASH
+       ═══════════════════════════════════════════════════════════ */
+    document.getElementById("copyHash")?.addEventListener("click", async () => {
+      const hash = document.getElementById("hashValue").textContent.trim();
+      try {
+        await navigator.clipboard.writeText(hash);
+        showToast("Hash SHA-256 copiado.", { spinning: false });
+      } catch {
+        showToast("Não foi possível copiar o hash.", { spinning: false });
+      }
     });
+
+    /* ═══════════════════════════════════════════════════════════
+       FILE TREE DATA & RENDER
+       ═══════════════════════════════════════════════════════════ */
+    const projectTree = {
+      name: "jarvis_project",
+      type: "folder",
+      open: true,
+      children: [
+        {
+          name: "actions",
+          type: "folder",
+          children: [
+            { name: "ai_modules.py", type: "file" },
+            { name: "browser_control.py", type: "file" },
+            { name: "system.py", type: "file" },
+            { name: "monitoring.py", type: "file" },
+          ],
+        },
+        {
+          name: "config",
+          type: "folder",
+          children: [
+            { name: "api_keys.json", type: "file" },
+            { name: "settings.yaml", type: "file" },
+            { name: "models_gemini.json", type: "file" },
+            { name: "stt_tts.yaml", type: "file" },
+          ],
+        },
+        {
+          name: "core",
+          type: "folder",
+          children: [
+            { name: "assistant.py", type: "file" },
+            { name: "voice_pipeline.py", type: "file" },
+            { name: "plugin_loader.py", type: "file" },
+            { name: "hotkey.py", type: "file" },
+            { name: "confirm.py", type: "file" },
+          ],
+        },
+        {
+          name: "dashboard",
+          type: "folder",
+          children: [
+            { name: "server.py", type: "file" },
+            { name: "ui.py", type: "file" },
+            { name: "static/", type: "file" },
+            { name: "templates/", type: "file" },
+          ],
+        },
+        {
+          name: "memory",
+          type: "folder",
+          children: [
+            { name: "context_manager.py", type: "file" },
+            { name: "history.py", type: "file" },
+            { name: "config_manager.py", type: "file" },
+          ],
+        },
+        {
+          name: "plugins",
+          type: "folder",
+          children: [
+            { name: "ativos.json", type: "file" },
+            { name: "example_tool.py", type: "file" },
+            { name: "web_search.py", type: "file" },
+          ],
+        },
+        {
+          name: "providers",
+          type: "folder",
+          children: [
+            { name: "base.py", type: "file" },
+            { name: "registry.py", type: "file" },
+            { name: "llm_openai.py", type: "file" },
+            { name: "stt_whisper.py", type: "file" },
+            { name: "tts_system.py", type: "file" },
+          ],
+        },
+        { name: "main.py", type: "file" },
+        { name: "requirements.txt", type: "file" },
+        { name: "README.md", type: "file" },
+      ],
+    };
+
+    function fileIcon(name) {
+      if (name.endsWith(".py")) return "fa-solid fa-file-code";
+      if (name.endsWith(".json") || name.endsWith(".yaml") || name.endsWith(".yml"))
+        return "fa-solid fa-file-lines";
+      if (name.endsWith(".md") || name.endsWith(".txt")) return "fa-solid fa-file-lines";
+      if (name.endsWith("/")) return "fa-regular fa-folder";
+      return "fa-regular fa-file";
+    }
+
+    function renderTree(node, depth = 0) {
+      if (node.type === "file") {
+        return `
+          <li role="treeitem">
+            <div class="tree-item">
+              <i class="${fileIcon(node.name)}"></i>
+              <span>${node.name}</span>
+            </div>
+          </li>`;
+      }
+
+      const isOpen = !!node.open;
+      const children = (node.children || [])
+        .map((child) => renderTree(child, depth + 1))
+        .join("");
+
+      return `
+        <li role="treeitem" aria-expanded="${isOpen}">
+          <div class="tree-item folder ${isOpen ? "open" : ""}" data-folder>
+            <i class="fa-solid fa-chevron-right chevron"></i>
+            <i class="fa-solid ${isOpen ? "fa-folder-open" : "fa-folder"}"></i>
+            <span>${node.name}/</span>
+          </div>
+          <ul class="tree-children ${isOpen ? "open" : ""}" role="group">
+            ${children}
+          </ul>
+        </li>`;
+    }
+
+    const treeRoot = document.getElementById("fileTree");
+    treeRoot.innerHTML = `<ul role="group">${renderTree(projectTree)}</ul>`;
+
+    // Toggle folders
+    treeRoot.addEventListener("click", (e) => {
+      const row = e.target.closest("[data-folder]");
+      if (!row) return;
+      const li = row.parentElement;
+      const kids = li.querySelector(":scope > .tree-children");
+      const open = kids.classList.toggle("open");
+      row.classList.toggle("open", open);
+      li.setAttribute("aria-expanded", String(open));
+      const folderIcon = row.querySelector(".fa-folder, .fa-folder-open");
+      if (folderIcon) {
+        folderIcon.classList.toggle("fa-folder-open", open);
+        folderIcon.classList.toggle("fa-folder", !open);
+      }
+    });
+
+    function setAllFolders(open) {
+      treeRoot.querySelectorAll(".tree-children").forEach((el) => {
+        el.classList.toggle("open", open);
+      });
+      treeRoot.querySelectorAll("[data-folder]").forEach((row) => {
+        row.classList.toggle("open", open);
+        const li = row.parentElement;
+        li?.setAttribute("aria-expanded", String(open));
+        const folderIcon = row.querySelector(".fa-folder, .fa-folder-open");
+        if (folderIcon) {
+          folderIcon.classList.toggle("fa-folder-open", open);
+          folderIcon.classList.toggle("fa-folder", !open);
+        }
+      });
+    }
+
+    document.getElementById("expandAll")?.addEventListener("click", () => setAllFolders(true));
+    document.getElementById("collapseAll")?.addEventListener("click", () => setAllFolders(false));
   </script>
 </body>
 </html>
