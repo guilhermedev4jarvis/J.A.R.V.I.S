@@ -211,9 +211,9 @@ Só é importado quando você escolhe um engine diferente do Gemini Live padrão
 git clone <url-do-repositorio>
 cd Mark-LVI   # ou o nome da pasta do MARK LVI (56)
 
-python setup.py depois
+python setup.py # depois
 pip install -r requirements.txt
-depois para rodar:
+# depois para rodar:
 python main.py
 ```
 
