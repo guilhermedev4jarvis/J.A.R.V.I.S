@@ -211,9 +211,9 @@ Só é importado quando você escolhe um engine diferente do Gemini Live padrão
 git clone <url-do-repositorio>
 cd Mark-LVI   # ou o nome da pasta do MARK LVI (56)
 
-python setup.py # depois
-pip install -r requirements.txt
-# depois para rodar:
+python setup.py
+# ou: pip install -r requirements.txt
+
 python main.py
 ```
 
@@ -246,11 +246,27 @@ Tudo permanece na sua máquina. Não há conta MARK LVI (56) nem telemetria embu
 
 | O quê | Onde | Nota |
 |---|---|---|
-| Chaves e ajustes | `config/api_keys.json` | Texto simples — quem tem sua conta de usuário pode ler |
+| **Segredos (recomendado)** | `.env` na raiz do projeto | Variáveis `MARK_GEMINI_API_KEY`, etc. — **nunca** versionar. Modelo: `.env.example` |
+| Ajustes de UI / engine | `config/api_keys.json` | Preferências, voz, devices. Modelo sem segredos: `config/api_keys.json.example` |
 | Certificado do dashboard | `config/certs/` | Gerado localmente |
 | Memória | `memory/long_term.json` | Apague o arquivo para o assistente “esquecer” |
 
-Esses caminhos estão no `.gitignore`. Com **Gemini Live**, o áudio da sessão vai para a API Google enquanto a conversa estiver aberta. Com **engine local**, áudio e texto podem permanecer só no seu PC.
+### Chaves de API — ordem de prioridade
+
+1. Variáveis de ambiente do sistema  
+2. Arquivo **`.env`** (carregado via `python-dotenv`, se instalado)  
+3. Campo correspondente em **`config/api_keys.json`**
+
+Assim o desenvolvedor pode manter só preferências no JSON e as senhas no `.env`. Confiar apenas no `.gitignore` para `api_keys.json` ainda permite vazamento se alguém forçar o add do arquivo; o padrão `.env` + exemplos no repositório reduz esse risco.
+
+```bash
+cp .env.example .env
+# edite .env e preencha MARK_GEMINI_API_KEY=...
+
+cp config/api_keys.json.example config/api_keys.json   # opcional, para UI
+```
+
+`.env`, `config/api_keys.json` e `config/certs/` estão no `.gitignore`. Com **Gemini Live**, o áudio da sessão vai para a API Google enquanto a conversa estiver aberta. Com **engine local**, áudio e texto podem permanecer só no seu PC.
 
 ---
 
