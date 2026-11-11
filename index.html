@@ -1,499 +1,227 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="MARK LVI (56) — Assistente virtual e agente autônomo de desktop. JARVIS local, extensível, Windows · macOS · Linux." />
-  <title>MARK LVI (56) — JARVIS</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <title>MARK LVI / JARVIS — Assistente autônomo local</title>
+  <meta name="description" content="MARK LVI (56) — JARVIS: assistente de desktop com biometria, ponte 3D Roblox/Blender/Godot, upscale 4K e modo offline." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            gold: {
+              50:  '#FFFBEB',
+              100: '#FEF3C7',
+              200: '#FDE68A',
+              300: '#FCD34D',
+              400: '#FBBF24',
+              500: '#D4A017',
+              600: '#B8860B',
+              700: '#92700A',
+              800: '#78590A',
+              900: '#5C4308'
+            },
+            ivory: {
+              DEFAULT: '#FFFEF9',
+              soft: '#FBF8F0',
+              line: '#E8E0D0',
+              mute: '#6B6358'
+            }
+          },
+          fontFamily: {
+            display: ['Segoe UI', 'Georgia', 'system-ui', 'sans-serif'],
+            mono: ['ui-monospace', 'Cascadia Code', 'Consolas', 'monospace']
+          },
+          boxShadow: {
+            gold: '0 8px 32px rgba(184, 134, 11, 0.12)',
+            card: '0 1px 0 rgba(184, 134, 11, 0.15), 0 12px 40px rgba(92, 67, 8, 0.06)'
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    :root {
-      --ivory: #fbfaf6;
-      --ivory-2: #f4f0e6;
-      --paper: #ffffff;
-      --ink: #1a1814;
-      --ink-soft: #4a453c;
-      --muted: #8a8478;
-      --gold: #c4a35a;
-      --gold-bright: #e0c878;
-      --gold-deep: #8f7340;
-      --gold-line: rgba(196, 163, 90, 0.35);
-      --shadow: 0 20px 50px rgba(26, 24, 20, 0.06);
-      --radius: 18px;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    html { scroll-behavior: smooth; }
-
     body {
-      font-family: "Outfit", system-ui, sans-serif;
       background:
-        radial-gradient(ellipse 90% 60% at 50% -10%, rgba(224, 200, 120, 0.18), transparent 55%),
-        radial-gradient(ellipse 50% 40% at 100% 20%, rgba(196, 163, 90, 0.08), transparent 50%),
-        radial-gradient(ellipse 40% 30% at 0% 80%, rgba(196, 163, 90, 0.07), transparent 45%),
-        var(--ivory);
-      color: var(--ink);
-      min-height: 100vh;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
+        radial-gradient(ellipse 90% 60% at 50% -10%, rgba(251, 191, 36, 0.18), transparent 55%),
+        radial-gradient(ellipse 50% 40% at 100% 80%, rgba(212, 160, 23, 0.08), transparent),
+        #FFFEF9;
     }
-
-    /* subtle noise overlay */
-    body::before {
-      content: "";
-      pointer-events: none;
-      position: fixed;
-      inset: 0;
-      opacity: 0.035;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      z-index: 0;
+    .card-hover {
+      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
     }
-
-    .wrap {
-      position: relative;
-      z-index: 1;
-      max-width: 920px;
-      margin: 0 auto;
-      padding: 2.5rem 1.5rem 4rem;
+    .card-hover:hover {
+      transform: translateY(-3px);
+      border-color: rgba(184, 134, 11, 0.55);
+      box-shadow: 0 12px 40px rgba(184, 134, 11, 0.14);
     }
-
-    /* ── header ── */
-    header {
-      text-align: center;
-      padding: 3.5rem 0 2.5rem;
-      animation: rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.35rem 0.9rem;
-      border: 1px solid var(--gold-line);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, 0.7);
-      backdrop-filter: blur(8px);
-      color: var(--gold-deep);
-      font-size: 0.72rem;
-      font-weight: 500;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      margin-bottom: 1.5rem;
-    }
-
-    .badge::before {
-      content: "";
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--gold);
-      box-shadow: 0 0 0 3px rgba(196, 163, 90, 0.25);
-    }
-
-    h1 {
-      font-family: "Cormorant Garamond", Georgia, serif;
-      font-weight: 600;
-      font-size: clamp(2.8rem, 7vw, 4.2rem);
-      letter-spacing: 0.04em;
-      line-height: 1.05;
-      color: var(--ink);
-      margin-bottom: 0.35rem;
-    }
-
-    h1 span {
-      background: linear-gradient(135deg, var(--gold-deep) 0%, var(--gold-bright) 45%, var(--gold) 100%);
+    .cmd-box { scrollbar-width: thin; scrollbar-color: #E8E0D0 transparent; }
+    .gold-text {
+      background: linear-gradient(135deg, #B8860B 0%, #D4A017 40%, #FBBF24 70%, #B8860B 100%);
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
     }
-
-    .subtitle {
-      font-family: "Cormorant Garamond", Georgia, serif;
-      font-style: italic;
-      font-size: clamp(1.15rem, 2.5vw, 1.45rem);
-      color: var(--ink-soft);
-      margin-bottom: 1.25rem;
-    }
-
-    .lead {
-      max-width: 34rem;
-      margin: 0 auto 2rem;
-      color: var(--muted);
-      font-size: 0.98rem;
-      font-weight: 300;
-    }
-
-    .cta-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      justify-content: center;
-    }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.55rem;
-      padding: 0.85rem 1.45rem;
-      border-radius: 999px;
-      font-size: 0.88rem;
-      font-weight: 500;
-      text-decoration: none;
-      transition: transform 0.2s ease, box-shadow 0.25s ease, background 0.2s ease;
-    }
-
-    .btn-primary {
-      background: linear-gradient(135deg, #b8923e 0%, #e0c878 50%, #c4a35a 100%);
-      color: #1a1814;
-      box-shadow: 0 8px 28px rgba(196, 163, 90, 0.35);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 36px rgba(196, 163, 90, 0.45);
-    }
-
-    .btn-ghost {
-      background: rgba(255, 255, 255, 0.85);
-      color: var(--ink-soft);
-      border: 1px solid var(--gold-line);
-    }
-
-    .btn-ghost:hover {
-      border-color: var(--gold);
-      color: var(--ink);
-      transform: translateY(-1px);
-    }
-
-    /* ── divider ── */
-    .ornament {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      margin: 2.75rem 0 2.25rem;
-      color: var(--gold);
-      opacity: 0.7;
-    }
-
-    .ornament::before,
-    .ornament::after {
-      content: "";
-      height: 1px;
-      width: min(140px, 22vw);
-      background: linear-gradient(90deg, transparent, var(--gold-line), transparent);
-    }
-
-    .ornament svg { width: 18px; height: 18px; }
-
-    /* ── features ── */
-    .features {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 1rem;
-      margin-bottom: 2.5rem;
-      animation: rise 1s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-
-    @media (max-width: 720px) {
-      .features { grid-template-columns: 1fr; }
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.72);
-      border: 1px solid rgba(196, 163, 90, 0.18);
-      border-radius: var(--radius);
-      padding: 1.35rem 1.25rem;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px);
-      transition: border-color 0.25s ease, transform 0.25s ease;
-    }
-
-    .card:hover {
-      border-color: rgba(196, 163, 90, 0.45);
-      transform: translateY(-3px);
-    }
-
-    .card-icon {
-      width: 36px;
-      height: 36px;
-      border-radius: 10px;
-      display: grid;
-      place-items: center;
-      margin-bottom: 0.9rem;
-      background: linear-gradient(145deg, rgba(224, 200, 120, 0.35), rgba(196, 163, 90, 0.12));
-      color: var(--gold-deep);
-    }
-
-    .card h3 {
-      font-family: "Cormorant Garamond", Georgia, serif;
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 0.35rem;
-      color: var(--ink);
-    }
-
-    .card p {
-      font-size: 0.86rem;
-      color: var(--muted);
-      font-weight: 300;
-    }
-
-    /* ── downloads ── */
-    .panel {
-      background: var(--paper);
-      border: 1px solid rgba(196, 163, 90, 0.22);
-      border-radius: 22px;
-      box-shadow: var(--shadow);
-      overflow: hidden;
-      animation: rise 1.05s 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-
-    .panel-head {
-      padding: 1.35rem 1.5rem 1rem;
-      border-bottom: 1px solid rgba(196, 163, 90, 0.12);
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .panel-head h2 {
-      font-family: "Cormorant Garamond", Georgia, serif;
-      font-size: 1.55rem;
-      font-weight: 600;
-    }
-
-    .panel-head span {
-      font-size: 0.78rem;
-      color: var(--muted);
-      letter-spacing: 0.04em;
-    }
-
-    .file-list { list-style: none; }
-
-    .file-list li a {
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      gap: 1rem;
-      padding: 1.05rem 1.5rem;
-      text-decoration: none;
-      color: inherit;
-      border-bottom: 1px solid rgba(26, 24, 20, 0.05);
-      transition: background 0.2s ease;
-    }
-
-    .file-list li:last-child a { border-bottom: 0; }
-
-    .file-list li a:hover {
-      background: linear-gradient(90deg, rgba(224, 200, 120, 0.12), transparent 70%);
-    }
-
-    .file-icon {
-      width: 42px;
-      height: 42px;
-      border-radius: 12px;
-      display: grid;
-      place-items: center;
-      background: var(--ivory-2);
-      border: 1px solid var(--gold-line);
-      color: var(--gold-deep);
-      flex-shrink: 0;
-    }
-
-    .file-meta strong {
-      display: block;
-      font-weight: 500;
-      font-size: 0.95rem;
-      color: var(--ink);
-    }
-
-    .file-meta small {
-      color: var(--muted);
-      font-size: 0.78rem;
-      font-weight: 300;
-    }
-
-    .chip {
-      font-size: 0.68rem;
-      font-weight: 500;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--gold-deep);
-      background: rgba(196, 163, 90, 0.12);
-      border: 1px solid var(--gold-line);
-      padding: 0.28rem 0.55rem;
-      border-radius: 999px;
-      white-space: nowrap;
-    }
-
-    /* ── footer ── */
-    footer {
-      text-align: center;
-      margin-top: 3rem;
-      padding-top: 1.5rem;
-      color: var(--muted);
-      font-size: 0.8rem;
-      font-weight: 300;
-      animation: rise 1.1s 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
-    }
-
-    footer strong {
-      color: var(--gold-deep);
-      font-weight: 500;
-    }
-
-    footer a {
-      color: var(--gold-deep);
-      text-decoration: none;
-      border-bottom: 1px solid transparent;
-      transition: border-color 0.2s;
-    }
-
-    footer a:hover { border-bottom-color: var(--gold); }
-
-    @keyframes rise {
-      from { opacity: 0; transform: translateY(18px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation: none !important;
-        transition: none !important;
-      }
-    }
   </style>
 </head>
-<body>
-  <div class="wrap">
-    <header>
-      <div class="badge">Assistente · Agente · Desktop</div>
-      <h1>MARK <span>LVI</span> (56)</h1>
-      <p class="subtitle">JARVIS — inteligência que ouve, vê e age no seu computador</p>
-      <p class="lead">
-        Ecossistema modular de automação, voz em tempo real, memória local e LLMs —
-        Gemini Live ou motores 100% offline. Windows, macOS e Linux. Sem assinatura.
-      </p>
-      <div class="cta-row">
-        <a class="btn btn-primary" href="jarvis_project.zip">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Baixar código-fonte
-        </a>
-        <a class="btn btn-ghost" href="README.md">Documentação</a>
-        <a class="btn btn-ghost" href="https://github.com/guilhermesdevschool/J.A.R.V.I.S" target="_blank" rel="noopener noreferrer">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.207 11.387.6.113.793-.26.793-.577 0-.285-.01-1.04-.016-2.04-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.09-.745.083-.73.083-.73 1.205.085 1.84 1.238 1.84 1.238 1.07 1.834 2.809 1.304 3.495.997.108-.775.42-1.305.763-1.605-2.665-.304-5.466-1.332-5.466-5.93 0-1.31.468-2.382 1.236-3.222-.124-.303-.536-1.523.117-3.176 0 0 1.008-.322 3.3 1.23.96-.267 1.98-.4 3-.405 1.02.005 2.04.138 3 .405 2.29-1.552 3.297-1.23 3.297-1.23.655 1.653.243 2.873.12 3.176.77.84 1.235 1.912 1.235 3.222 0 4.61-2.805 5.624-5.476 5.921.43.372.823 1.102.823 2.222 0 1.606-.015 2.898-.015 3.293 0 .32.192.694.8.576C20.565 21.796 24 17.297 24 12c0-6.63-5.37-12-12-12z"/></svg>
-          GitHub
-        </a>
+<body class="text-stone-800 font-display antialiased min-h-screen">
+  <header class="border-b border-ivory-line/90 bg-white/80 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <span class="h-9 w-9 rounded-lg bg-gradient-to-br from-gold-200 to-gold-500 border border-gold-600/30 flex items-center justify-center text-gold-900 font-mono text-xs tracking-widest font-bold shadow-gold">LVI</span>
+        <div>
+          <p class="text-sm font-semibold tracking-wide text-stone-900">MARK LVI <span class="text-ivory-mute font-normal">/ JARVIS</span></p>
+          <p class="text-[11px] text-ivory-mute font-mono">offline-first · modular · local control</p>
+        </div>
       </div>
-    </header>
-
-    <div class="ornament" aria-hidden="true">
-      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l1.2 6.3L19 7l-4.2 4.2L21 12l-6.2.8L19 17l-5.8-1.7L12 22l-1.2-6.7L5 17l4.2-4.2L3 12l6.2-.8L5 7l5.8 1.7L12 2z"/></svg>
+      <nav class="flex flex-wrap gap-2 text-sm">
+        <a href="#features" class="px-3 py-1.5 rounded-md text-ivory-mute hover:text-gold-700 hover:bg-gold-50 transition">Recursos</a>
+        <a href="#install" class="px-3 py-1.5 rounded-md text-ivory-mute hover:text-gold-700 hover:bg-gold-50 transition">Instalar</a>
+        <a href="./README.md" class="px-3 py-1.5 rounded-md text-ivory-mute hover:text-gold-700 hover:bg-gold-50 transition">Docs</a>
+        <a href="./Jarvis_Project.zip" class="px-3 py-1.5 rounded-md bg-gold-500/15 text-gold-800 border border-gold-500/40 hover:bg-gold-500/25 transition font-medium">Download ZIP</a>
+      </nav>
     </div>
+  </header>
 
-    <section class="features" aria-label="Destaques">
-      <article class="card">
-        <div class="card-icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a6 6 0 0 0-6 6c0 4 6 12 6 12s6-8 6-12a6 6 0 0 0-6-6z"/><circle cx="12" cy="9" r="2"/></svg>
+  <main>
+    <section class="max-w-6xl mx-auto px-4 pt-16 pb-20">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <p class="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.2em] text-gold-700 mb-4">
+            <span class="h-1.5 w-1.5 rounded-full bg-gold-500"></span>
+            Desktop agent · Python 3.11+
+          </p>
+          <h1 class="text-4xl sm:text-5xl font-semibold leading-tight text-stone-900 mb-5">
+            O assistente que <span class="gold-text">ouve, vê e age</span> na sua máquina
+          </h1>
+          <p class="text-ivory-mute text-lg leading-relaxed mb-8 max-w-xl">
+            MARK LVI (56) controla o desktop com outcomes honestos, biometria no boot,
+            ponte ao vivo para Roblox Studio / Blender / Godot e upscale até 4K —
+            com fallback 100% local quando a nuvem não está disponível.
+          </p>
+          <div class="flex flex-wrap gap-3">
+            <a href="#install" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-gold-600 to-gold-500 text-white font-semibold shadow-gold hover:brightness-105 transition">Começar agora</a>
+            <a href="./Jarvis_Project.zip" class="px-5 py-2.5 rounded-lg border border-ivory-line bg-white hover:border-gold-500/50 text-stone-800 transition">Baixar Jarvis_Project.zip</a>
+          </div>
+          <div class="mt-8 flex flex-wrap gap-2 text-[11px] font-mono">
+            <span class="px-2.5 py-1 rounded border border-ivory-line bg-white text-ivory-mute">CC BY-NC 4.0</span>
+            <span class="px-2.5 py-1 rounded border border-ivory-line bg-white text-ivory-mute">Windows · macOS · Linux</span>
+            <span class="px-2.5 py-1 rounded border border-ivory-line bg-white text-ivory-mute">Ollama · Gemini Live</span>
+          </div>
         </div>
-        <h3>Local ou nuvem</h3>
-        <p>Gemini Live por padrão; Whisper, Ollama e Piper quando nada pode sair da máquina.</p>
-      </article>
-      <article class="card">
-        <div class="card-icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <div class="relative">
+          <div class="rounded-2xl border border-gold-500/25 bg-white p-6 shadow-card">
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-mono text-gold-700 tracking-wide">HUD · STATUS</span>
+              <span class="text-[10px] font-mono text-emerald-700">● SYSTEMS NOMINAL</span>
+            </div>
+            <div class="space-y-3 font-mono text-xs">
+              <div class="flex justify-between border-b border-ivory-line pb-2"><span class="text-ivory-mute">Biometrics</span><span class="text-gold-700 font-medium">FACE → VOICE GATE</span></div>
+              <div class="flex justify-between border-b border-ivory-line pb-2"><span class="text-ivory-mute">Engine bridge</span><span class="text-stone-800">ROBLOX · BLENDER · GODOT</span></div>
+              <div class="flex justify-between border-b border-ivory-line pb-2"><span class="text-ivory-mute">Upscale</span><span class="text-stone-800">2K · 4K · 4×</span></div>
+              <div class="flex justify-between border-b border-ivory-line pb-2"><span class="text-ivory-mute">CodeEngine</span><span class="text-stone-800">ARCHITECT → HEALER</span></div>
+              <div class="flex justify-between"><span class="text-ivory-mute">Offline model</span><span class="text-stone-800">qwen2.5-coder:7b</span></div>
+            </div>
+            <p class="mt-6 text-[11px] text-ivory-mute leading-relaxed">
+              Sem telemetria obrigatória. Actions e plugins descobertos automaticamente.
+              O que você não usa não carrega na inicialização.
+            </p>
+          </div>
         </div>
-        <h3>Actions unificadas</h3>
-        <p><code>code_assist</code>, <code>powershell_assist</code> e <code>game_assist</code> — uma tool, vários módulos.</p>
-      </article>
-      <article class="card">
-        <div class="card-icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-        <h3>Segredos no .env</h3>
-        <p>Chaves via ambiente ou <code>.env</code>, com exemplos seguros no repositório.</p>
-      </article>
-    </section>
-
-    <section class="panel" aria-label="Arquivos do projeto">
-      <div class="panel-head">
-        <h2>Arquivos</h2>
-        <span>Pacote oficial · MARK LVI (56)</span>
       </div>
-      <ul class="file-list">
-        <li>
-          <a href="jarvis_project.zip">
-            <div class="file-icon" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            </div>
-            <div class="file-meta">
-              <strong>jarvis_project.zip</strong>
-              <small>Código-fonte completo do ecossistema</small>
-            </div>
-            <span class="chip">Principal</span>
-          </a>
-        </li>
-        <li>
-          <a href="README.md">
-            <div class="file-icon" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-            </div>
-            <div class="file-meta">
-              <strong>README.md</strong>
-              <small>Estrutura, instalação, tools e privacidade</small>
-            </div>
-            <span class="chip">Docs</span>
-          </a>
-        </li>
-        <li>
-          <a href="AUTORIA.md">
-            <div class="file-icon" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            </div>
-            <div class="file-meta">
-              <strong>AUTORIA.md</strong>
-              <small>Identidade e créditos do projeto</small>
-            </div>
-            <span class="chip">Meta</span>
-          </a>
-        </li>
-        <li>
-          <a href="https://github.com/guilhermesdevschool/J.A.R.V.I.S" target="_blank" rel="noopener noreferrer">
-            <div class="file-icon" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.207 11.387.6.113.793-.26.793-.577 0-.285-.01-1.04-.016-2.04-3.338.726-4.042-1.61-4.042-1.61-.546-1.387-1.333-1.757-1.333-1.757-1.09-.745.083-.73.083-.73 1.205.085 1.84 1.238 1.84 1.238 1.07 1.834 2.809 1.304 3.495.997.108-.775.42-1.305.763-1.605-2.665-.304-5.466-1.332-5.466-5.93 0-1.31.468-2.382 1.236-3.222-.124-.303-.536-1.523.117-3.176 0 0 1.008-.322 3.3 1.23.96-.267 1.98-.4 3-.405 1.02.005 2.04.138 3 .405 2.29-1.552 3.297-1.23 3.297-1.23.655 1.653.243 2.873.12 3.176.77.84 1.235 1.912 1.235 3.222 0 4.61-2.805 5.624-5.476 5.921.43.372.823 1.102.823 2.222 0 1.606-.015 2.898-.015 3.293 0 .32.192.694.8.576C20.565 21.796 24 17.297 24 12c0-6.63-5.37-12-12-12z"/></svg>
-            </div>
-            <div class="file-meta">
-              <strong>GitHub</strong>
-              <small>Repositório oficial · guilhermesdevschool/J.A.R.V.I.S</small>
-            </div>
-            <span class="chip">Repo</span>
-          </a>
-        </li>
-        <li>
-          <a href="LICENSE.md">
-            <div class="file-icon" aria-hidden="true">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-            </div>
-            <div class="file-meta">
-              <strong>LICENSE.md</strong>
-              <small>Creative Commons BY-NC 4.0</small>
-            </div>
-            <span class="chip">Legal</span>
-          </a>
-        </li>
-      </ul>
     </section>
 
-    <footer>
-      <p><strong>MARK LVI (56)</strong> · engenharia por Guilherme</p>
-      <p style="margin-top:0.35rem">Uso pessoal e não comercial · <a href="LICENSE.md">CC BY-NC 4.0</a> · <a href="https://github.com/guilhermesdevschool/J.A.R.V.I.S" target="_blank" rel="noopener noreferrer">GitHub</a></p>
-    </footer>
-  </div>
+    <section id="features" class="border-t border-ivory-line bg-ivory-soft/80 py-16">
+      <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-2xl font-semibold text-stone-900 mb-2">Capacidades principais</h2>
+        <p class="text-ivory-mute mb-10 max-w-2xl">Arquitetura modular: cada frente de qualidade reforça confiabilidade, segurança e extensibilidade.</p>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <article class="card-hover rounded-xl border border-ivory-line bg-white p-5 shadow-card">
+            <p class="text-gold-600 font-mono text-[10px] tracking-widest mb-2">3D BRIDGE</p>
+            <h3 class="text-lg font-medium text-stone-900 mb-2">Roblox · Blender · Godot</h3>
+            <p class="text-sm text-ivory-mute leading-relaxed">Bridge HTTP ao vivo no Studio, <code class="text-gold-700">.rbxmx</code>, mesh headless e injeção de cenas/scripts Godot via <code class="text-gold-700">engine_bridge</code>.</p>
+          </article>
+          <article class="card-hover rounded-xl border border-ivory-line bg-white p-5 shadow-card">
+            <p class="text-gold-600 font-mono text-[10px] tracking-widest mb-2">VISION</p>
+            <h3 class="text-lg font-medium text-stone-900 mb-2">Upscale até 4K</h3>
+            <p class="text-sm text-ivory-mute leading-relaxed">Super-resolução híbrida: Real-ESRGAN quando disponível, senão OpenCV + Pillow — de ~340p a lado longo 3840px.</p>
+          </article>
+          <article class="card-hover rounded-xl border border-ivory-line bg-white p-5 shadow-card">
+            <p class="text-gold-600 font-mono text-[10px] tracking-widest mb-2">SECURITY</p>
+            <h3 class="text-lg font-medium text-stone-900 mb-2">Biometria dupla</h3>
+            <p class="text-sm text-ivory-mute leading-relaxed">Boot: cadastro automático se faltar base; autenticação <strong class="text-stone-800">rosto → voz</strong>; falha fecha o terminal.</p>
+          </article>
+          <article class="card-hover rounded-xl border border-ivory-line bg-white p-5 shadow-card">
+            <p class="text-gold-600 font-mono text-[10px] tracking-widest mb-2">OFFLINE</p>
+            <h3 class="text-lg font-medium text-stone-900 mb-2">Modo local</h3>
+            <p class="text-sm text-ivory-mute leading-relaxed">STT/TTS locais, Ollama, BM25 e entity index — o assistente continua sem cota de nuvem.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="install" class="py-16">
+      <div class="max-w-6xl mx-auto px-4">
+        <h2 class="text-2xl font-semibold text-stone-900 mb-2">Instalação rápida</h2>
+        <p class="text-ivory-mute mb-8">Python 3.11–3.13. O <code class="text-gold-700">setup.py</code> é só a ponte para os requirements.</p>
+        <div class="grid lg:grid-cols-2 gap-6">
+          <div class="rounded-xl border border-gold-500/20 bg-white p-5 shadow-card">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-mono text-gold-700">CORE + LOCAL</span>
+              <button type="button" data-copy="core" class="text-[11px] px-2 py-1 rounded border border-ivory-line hover:border-gold-500/50 text-ivory-mute hover:text-gold-700 transition">Copiar</button>
+            </div>
+            <pre id="cmd-core" class="cmd-box font-mono text-[12px] leading-relaxed text-stone-700 bg-ivory-soft rounded-lg p-3 overflow-x-auto whitespace-pre">python setup.py
+python setup.py --local
+ollama pull qwen2.5-coder:7b
+python main.py</pre>
+          </div>
+          <div class="rounded-xl border border-gold-500/20 bg-white p-5 shadow-card">
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-mono text-gold-700">HEAVY / COMPLETO</span>
+              <button type="button" data-copy="heavy" class="text-[11px] px-2 py-1 rounded border border-ivory-line hover:border-gold-500/50 text-ivory-mute hover:text-gold-700 transition">Copiar</button>
+            </div>
+            <pre id="cmd-heavy" class="cmd-box font-mono text-[12px] leading-relaxed text-stone-700 bg-ivory-soft rounded-lg p-3 overflow-x-auto whitespace-pre">python setup.py --heavy
+python setup.py --local --heavy
+python setup.py --all
+python -m pytest tests/ -q</pre>
+          </div>
+        </div>
+        <p class="mt-6 text-sm text-ivory-mute">
+          Documentação: <a class="text-gold-700 hover:underline" href="./README.md">README.md</a>
+          · <a class="text-gold-700 hover:underline" href="./AUTORIA.md">AUTORIA.md</a>
+          · <a class="text-gold-700 hover:underline" href="./LICENSE.md">LICENSE.md</a> (CC BY-NC 4.0)
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-ivory-line py-8 bg-white/60">
+    <div class="max-w-6xl mx-auto px-4 flex flex-wrap items-center justify-between gap-3 text-sm text-ivory-mute">
+      <p>© 2026 Guilherme · MARK LVI (56) / JARVIS</p>
+      <p class="font-mono text-[11px]">Sem telemetria obrigatória · Uso comercial não permitido</p>
+    </div>
+  </footer>
+
+  <script>
+    const cmds = {
+      core: document.getElementById('cmd-core').textContent.trim(),
+      heavy: document.getElementById('cmd-heavy').textContent.trim()
+    };
+    document.querySelectorAll('[data-copy]').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const key = btn.getAttribute('data-copy');
+        try {
+          await navigator.clipboard.writeText(cmds[key]);
+          const prev = btn.textContent;
+          btn.textContent = 'Copiado';
+          setTimeout(() => { btn.textContent = prev; }, 1500);
+        } catch (e) {
+          btn.textContent = 'Selecionar manualmente';
+        }
+      });
+    });
+  </script>
 </body>
 </html>
