@@ -1,227 +1,153 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>MARK LVI / JARVIS — Assistente autônomo local</title>
-  <meta name="description" content="MARK LVI (56) — JARVIS: assistente de desktop com biometria, ponte 3D Roblox/Blender/Godot, upscale 4K e modo offline." />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            gold: {
-              50:  '#FFFBEB',
-              100: '#FEF3C7',
-              200: '#FDE68A',
-              300: '#FCD34D',
-              400: '#FBBF24',
-              500: '#D4A017',
-              600: '#B8860B',
-              700: '#92700A',
-              800: '#78590A',
-              900: '#5C4308'
-            },
-            ivory: {
-              DEFAULT: '#FFFEF9',
-              soft: '#FBF8F0',
-              line: '#E8E0D0',
-              mute: '#6B6358'
-            }
-          },
-          fontFamily: {
-            display: ['Segoe UI', 'Georgia', 'system-ui', 'sans-serif'],
-            mono: ['ui-monospace', 'Cascadia Code', 'Consolas', 'monospace']
-          },
-          boxShadow: {
-            gold: '0 8px 32px rgba(184, 134, 11, 0.12)',
-            card: '0 1px 0 rgba(184, 134, 11, 0.15), 0 12px 40px rgba(92, 67, 8, 0.06)'
-          }
-        }
-      }
-    }
-  </script>
+  <title>J.A.R.V.I.S. — MARK LXI (61)</title>
+  <meta name="description" content="J.A.R.V.I.S. — MARK LXI (61): assistente offline-first, modular e com controle local." />
   <style>
+    :root {
+      --bg: #070b14;
+      --panel: rgba(15, 23, 42, 0.72);
+      --border: rgba(148, 163, 184, 0.18);
+      --text: #e5eefc;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --green: #22c55e;
+      --amber: #fbbf24;
+      --glow: rgba(56, 189, 248, 0.25);
+    }
+    * { box-sizing: border-box; }
     body {
+      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
       background:
-        radial-gradient(ellipse 90% 60% at 50% -10%, rgba(251, 191, 36, 0.18), transparent 55%),
-        radial-gradient(ellipse 50% 40% at 100% 80%, rgba(212, 160, 23, 0.08), transparent),
-        #FFFEF9;
+        radial-gradient(1200px 600px at 10% -10%, rgba(56,189,248,0.12), transparent 60%),
+        radial-gradient(900px 500px at 100% 0%, rgba(34,197,94,0.08), transparent 50%),
+        var(--bg);
+      color: var(--text); line-height: 1.5; min-height: 100vh;
     }
-    .card-hover {
-      transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .wrap { max-width: 1080px; margin: 0 auto; padding: 28px 18px 48px; }
+    header { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 18px; margin-bottom: 28px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      border: 1px solid var(--border); background: var(--panel);
+      padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;
+      letter-spacing: 1.5px; color: var(--accent);
+      box-shadow: 0 0 24px var(--glow);
     }
-    .card-hover:hover {
-      transform: translateY(-3px);
-      border-color: rgba(184, 134, 11, 0.55);
-      box-shadow: 0 12px 40px rgba(184, 134, 11, 0.14);
+    .badge span { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); }
+    h1 { margin: 0; font-size: clamp(1.6rem, 3vw, 2.2rem); letter-spacing: 0.5px; }
+    .sub { color: var(--muted); font-size: 0.95rem; margin-top: 4px; }
+    .hud {
+      display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      background: var(--panel); border: 1px solid var(--border); border-radius: 16px;
+      padding: 16px; margin: 22px 0 28px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12.5px;
     }
-    .cmd-box { scrollbar-width: thin; scrollbar-color: #E8E0D0 transparent; }
-    .gold-text {
-      background: linear-gradient(135deg, #B8860B 0%, #D4A017 40%, #FBBF24 70%, #B8860B 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
+    .hud .row { color: var(--muted); }
+    .hud .row b { color: var(--text); font-weight: 600; }
+    .hud .ok { color: var(--green); }
+    .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); margin-bottom: 28px; }
+    .card {
+      background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 16px 16px 14px;
     }
+    .card h3 { margin: 0 0 8px; font-size: 0.95rem; color: var(--accent); letter-spacing: 0.4px; }
+    .card p { margin: 0; color: var(--muted); font-size: 0.9rem; }
+    .install {
+      display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      margin-bottom: 28px;
+    }
+    pre {
+      margin: 10px 0 0; padding: 12px; border-radius: 12px; overflow: auto;
+      background: #0b1220; border: 1px solid var(--border); color: #cbd5e1; font-size: 12px;
+    }
+    .cta {
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 8px 0 24px;
+    }
+    .btn {
+      display: inline-block; background: linear-gradient(135deg, #0ea5e9, #22c55e);
+      color: #041018; font-weight: 800; letter-spacing: 0.4px; border: none;
+      padding: 12px 18px; border-radius: 12px; text-decoration: none;
+      box-shadow: 0 8px 28px rgba(14,165,233,0.25);
+    }
+    .btn:hover { filter: brightness(1.05); text-decoration: none; }
+    footer {
+      margin-top: 12px; padding-top: 16px; border-top: 1px solid var(--border);
+      color: var(--muted); font-size: 0.85rem; display: flex; flex-wrap: wrap; gap: 10px 16px;
+      justify-content: space-between;
+    }
+    footer .links { display: flex; flex-wrap: wrap; gap: 12px; }
   </style>
 </head>
-<body class="text-stone-800 font-display antialiased min-h-screen">
-  <header class="border-b border-ivory-line/90 bg-white/80 backdrop-blur-md sticky top-0 z-40">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <span class="h-9 w-9 rounded-lg bg-gradient-to-br from-gold-200 to-gold-500 border border-gold-600/30 flex items-center justify-center text-gold-900 font-mono text-xs tracking-widest font-bold shadow-gold">LVI</span>
-        <div>
-          <p class="text-sm font-semibold tracking-wide text-stone-900">MARK LVI <span class="text-ivory-mute font-normal">/ JARVIS</span></p>
-          <p class="text-[11px] text-ivory-mute font-mono">offline-first · modular · local control</p>
-        </div>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="badge"><span></span> LXI</div>
+      <div>
+        <h1>J.A.R.V.I.S. — MARK LXI (61)</h1>
+        <div class="sub">offline-first · modular · local control</div>
       </div>
-      <nav class="flex flex-wrap gap-2 text-sm">
-        <a href="#features" class="px-3 py-1.5 rounded-md text-ivory-mute hover:text-gold-700 hover:bg-gold-50 transition">Recursos</a>
-        <a href="#install" class="px-3 py-1.5 rounded-md text-ivory-mute hover:text-gold-700 hover:bg-gold-50 transition">Instalar</a>
-        <a href="./README.md" class="px-3 py-1.5 rounded-md text-ivory-mute hover:text-gold-700 hover:bg-gold-50 transition">Docs</a>
-        <a href="./Jarvis_Project.zip" class="px-3 py-1.5 rounded-md bg-gold-500/15 text-gold-800 border border-gold-500/40 hover:bg-gold-500/25 transition font-medium">Download ZIP</a>
-      </nav>
-    </div>
-  </header>
+    </header>
 
-  <main>
-    <section class="max-w-6xl mx-auto px-4 pt-16 pb-20">
-      <div class="grid lg:grid-cols-2 gap-12 items-center">
-        <div>
-          <p class="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-[0.2em] text-gold-700 mb-4">
-            <span class="h-1.5 w-1.5 rounded-full bg-gold-500"></span>
-            Desktop agent · Python 3.11+
-          </p>
-          <h1 class="text-4xl sm:text-5xl font-semibold leading-tight text-stone-900 mb-5">
-            O assistente que <span class="gold-text">ouve, vê e age</span> na sua máquina
-          </h1>
-          <p class="text-ivory-mute text-lg leading-relaxed mb-8 max-w-xl">
-            MARK LVI (56) controla o desktop com outcomes honestos, biometria no boot,
-            ponte ao vivo para Roblox Studio / Blender / Godot e upscale até 4K —
-            com fallback 100% local quando a nuvem não está disponível.
-          </p>
-          <div class="flex flex-wrap gap-3">
-            <a href="#install" class="px-5 py-2.5 rounded-lg bg-gradient-to-r from-gold-600 to-gold-500 text-white font-semibold shadow-gold hover:brightness-105 transition">Começar agora</a>
-            <a href="./Jarvis_Project.zip" class="px-5 py-2.5 rounded-lg border border-ivory-line bg-white hover:border-gold-500/50 text-stone-800 transition">Baixar Jarvis_Project.zip</a>
-          </div>
-          <div class="mt-8 flex flex-wrap gap-2 text-[11px] font-mono">
-            <span class="px-2.5 py-1 rounded border border-ivory-line bg-white text-ivory-mute">CC BY-NC 4.0</span>
-            <span class="px-2.5 py-1 rounded border border-ivory-line bg-white text-ivory-mute">Windows · macOS · Linux</span>
-            <span class="px-2.5 py-1 rounded border border-ivory-line bg-white text-ivory-mute">Ollama · Gemini Live</span>
-          </div>
-        </div>
-        <div class="relative">
-          <div class="rounded-2xl border border-gold-500/25 bg-white p-6 shadow-card">
-            <div class="flex items-center justify-between mb-4">
-              <span class="text-xs font-mono text-gold-700 tracking-wide">HUD · STATUS</span>
-              <span class="text-[10px] font-mono text-emerald-700">● SYSTEMS NOMINAL</span>
-            </div>
-            <div class="space-y-3 font-mono text-xs">
-              <div class="flex justify-between border-b border-ivory-line pb-2"><span class="text-ivory-mute">Biometrics</span><span class="text-gold-700 font-medium">FACE → VOICE GATE</span></div>
-              <div class="flex justify-between border-b border-ivory-line pb-2"><span class="text-ivory-mute">Engine bridge</span><span class="text-stone-800">ROBLOX · BLENDER · GODOT</span></div>
-              <div class="flex justify-between border-b border-ivory-line pb-2"><span class="text-ivory-mute">Upscale</span><span class="text-stone-800">2K · 4K · 4×</span></div>
-              <div class="flex justify-between border-b border-ivory-line pb-2"><span class="text-ivory-mute">CodeEngine</span><span class="text-stone-800">ARCHITECT → HEALER</span></div>
-              <div class="flex justify-between"><span class="text-ivory-mute">Offline model</span><span class="text-stone-800">qwen2.5-coder:7b</span></div>
-            </div>
-            <p class="mt-6 text-[11px] text-ivory-mute leading-relaxed">
-              Sem telemetria obrigatória. Actions e plugins descobertos automaticamente.
-              O que você não usa não carrega na inicialização.
-            </p>
-          </div>
-        </div>
-      </div>
+    <section class="hud" aria-label="Status HUD">
+      <div class="row ok">● SYSTEMS NOMINAL</div>
+      <div class="row">Biometrics: <b>FACE → VOICE (0.75)</b></div>
+      <div class="row">Autonomy: <b>MISSION PLANNER + TRIGGERS</b></div>
+      <div class="row">Vision &amp; Dev: <b>GEMINI VISION · GIT COPILOT</b></div>
+      <div class="row">Engine bridge: <b>ROBLOX · BLENDER · GODOT</b></div>
+      <div class="row">Upscale: <b>2K · 4K · 4×</b></div>
+      <div class="row">Offline model: <b>qwen2.5-coder:7b</b></div>
     </section>
 
-    <section id="features" class="border-t border-ivory-line bg-ivory-soft/80 py-16">
-      <div class="max-w-6xl mx-auto px-4">
-        <h2 class="text-2xl font-semibold text-stone-900 mb-2">Capacidades principais</h2>
-        <p class="text-ivory-mute mb-10 max-w-2xl">Arquitetura modular: cada frente de qualidade reforça confiabilidade, segurança e extensibilidade.</p>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <article class="card-hover rounded-xl border border-ivory-line bg-white p-5 shadow-card">
-            <p class="text-gold-600 font-mono text-[10px] tracking-widest mb-2">3D BRIDGE</p>
-            <h3 class="text-lg font-medium text-stone-900 mb-2">Roblox · Blender · Godot</h3>
-            <p class="text-sm text-ivory-mute leading-relaxed">Bridge HTTP ao vivo no Studio, <code class="text-gold-700">.rbxmx</code>, mesh headless e injeção de cenas/scripts Godot via <code class="text-gold-700">engine_bridge</code>.</p>
-          </article>
-          <article class="card-hover rounded-xl border border-ivory-line bg-white p-5 shadow-card">
-            <p class="text-gold-600 font-mono text-[10px] tracking-widest mb-2">VISION</p>
-            <h3 class="text-lg font-medium text-stone-900 mb-2">Upscale até 4K</h3>
-            <p class="text-sm text-ivory-mute leading-relaxed">Super-resolução híbrida: Real-ESRGAN quando disponível, senão OpenCV + Pillow — de ~340p a lado longo 3840px.</p>
-          </article>
-          <article class="card-hover rounded-xl border border-ivory-line bg-white p-5 shadow-card">
-            <p class="text-gold-600 font-mono text-[10px] tracking-widest mb-2">SECURITY</p>
-            <h3 class="text-lg font-medium text-stone-900 mb-2">Biometria dupla</h3>
-            <p class="text-sm text-ivory-mute leading-relaxed">Boot: cadastro automático se faltar base; autenticação <strong class="text-stone-800">rosto → voz</strong>; falha fecha o terminal.</p>
-          </article>
-          <article class="card-hover rounded-xl border border-ivory-line bg-white p-5 shadow-card">
-            <p class="text-gold-600 font-mono text-[10px] tracking-widest mb-2">OFFLINE</p>
-            <h3 class="text-lg font-medium text-stone-900 mb-2">Modo local</h3>
-            <p class="text-sm text-ivory-mute leading-relaxed">STT/TTS locais, Ollama, BM25 e entity index — o assistente continua sem cota de nuvem.</p>
-          </article>
-        </div>
-      </div>
+    <section class="grid">
+      <article class="card">
+        <h3>Biometria dupla sequencial</h3>
+        <p>Boot face → voz com TTS e overlay. Threshold de voz 0.75. Wake words locais opcionais.</p>
+      </article>
+      <article class="card">
+        <h3>Missões &amp; Gatilhos</h3>
+        <p>mission_planner, context_triggers e loop proativo para tarefas compostas sem microgerência.</p>
+      </article>
+      <article class="card">
+        <h3>Visão multimodal &amp; memória</h3>
+        <p>screen_context_advisor (Gemini), OCR, timeline privada de tela com redação de segredos.</p>
+      </article>
+      <article class="card">
+        <h3>Roblox · Blender · Godot · Git</h3>
+        <p>Bridges de engines e git_voice_copilot (status, diff, commit e push com owner_gate).</p>
+      </article>
     </section>
 
-    <section id="install" class="py-16">
-      <div class="max-w-6xl mx-auto px-4">
-        <h2 class="text-2xl font-semibold text-stone-900 mb-2">Instalação rápida</h2>
-        <p class="text-ivory-mute mb-8">Python 3.11–3.13. O <code class="text-gold-700">setup.py</code> é só a ponte para os requirements.</p>
-        <div class="grid lg:grid-cols-2 gap-6">
-          <div class="rounded-xl border border-gold-500/20 bg-white p-5 shadow-card">
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-xs font-mono text-gold-700">CORE + LOCAL</span>
-              <button type="button" data-copy="core" class="text-[11px] px-2 py-1 rounded border border-ivory-line hover:border-gold-500/50 text-ivory-mute hover:text-gold-700 transition">Copiar</button>
-            </div>
-            <pre id="cmd-core" class="cmd-box font-mono text-[12px] leading-relaxed text-stone-700 bg-ivory-soft rounded-lg p-3 overflow-x-auto whitespace-pre">python setup.py
-python setup.py --local
-ollama pull qwen2.5-coder:7b
+    <section class="install">
+      <div class="card">
+        <h3>Instalação — CORE + LOCAL</h3>
+        <pre>pip install -r requirements.txt
+pip install -r requirements-local.txt
 python main.py</pre>
-          </div>
-          <div class="rounded-xl border border-gold-500/20 bg-white p-5 shadow-card">
-            <div class="flex items-center justify-between mb-3">
-              <span class="text-xs font-mono text-gold-700">HEAVY / COMPLETO</span>
-              <button type="button" data-copy="heavy" class="text-[11px] px-2 py-1 rounded border border-ivory-line hover:border-gold-500/50 text-ivory-mute hover:text-gold-700 transition">Copiar</button>
-            </div>
-            <pre id="cmd-heavy" class="cmd-box font-mono text-[12px] leading-relaxed text-stone-700 bg-ivory-soft rounded-lg p-3 overflow-x-auto whitespace-pre">python setup.py --heavy
-python setup.py --local --heavy
-python setup.py --all
-python -m pytest tests/ -q</pre>
-          </div>
-        </div>
-        <p class="mt-6 text-sm text-ivory-mute">
-          Documentação: <a class="text-gold-700 hover:underline" href="./README.md">README.md</a>
-          · <a class="text-gold-700 hover:underline" href="./AUTORIA.md">AUTORIA.md</a>
-          · <a class="text-gold-700 hover:underline" href="./LICENSE.md">LICENSE.md</a> (CC BY-NC 4.0)
-        </p>
+      </div>
+      <div class="card">
+        <h3>Instalação — HEAVY / COMPLETO</h3>
+        <pre>pip install -r requirements.txt
+pip install -r requirements-heavy.txt
+python main.py</pre>
       </div>
     </section>
-  </main>
 
-  <footer class="border-t border-ivory-line py-8 bg-white/60">
-    <div class="max-w-6xl mx-auto px-4 flex flex-wrap items-center justify-between gap-3 text-sm text-ivory-mute">
-      <p>© 2026 Guilherme · MARK LVI (56) / JARVIS</p>
-      <p class="font-mono text-[11px]">Sem telemetria obrigatória · Uso comercial não permitido</p>
+    <div class="cta">
+      <a class="btn" href="JARVIS_MARK_LXI_verified.zip">Download JARVIS_MARK_LXI_verified.zip</a>
+      <span class="sub">Python 3.10+ · Windows / macOS / Linux</span>
     </div>
-  </footer>
 
-  <script>
-    const cmds = {
-      core: document.getElementById('cmd-core').textContent.trim(),
-      heavy: document.getElementById('cmd-heavy').textContent.trim()
-    };
-    document.querySelectorAll('[data-copy]').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const key = btn.getAttribute('data-copy');
-        try {
-          await navigator.clipboard.writeText(cmds[key]);
-          const prev = btn.textContent;
-          btn.textContent = 'Copiado';
-          setTimeout(() => { btn.textContent = prev; }, 1500);
-        } catch (e) {
-          btn.textContent = 'Selecionar manualmente';
-        }
-      });
-    });
-  </script>
+    <footer>
+      <div class="links">
+        <a href="readme.md">readme.md</a>
+        <a href="AUTORIA.md">AUTORIA.md</a>
+        <a href="LICENSE">LICENSE</a>
+      </div>
+      <div>© 2026 Guilherme · J.A.R.V.I.S. — MARK LXI (61)</div>
+    </footer>
+  </div>
 </body>
 </html>
