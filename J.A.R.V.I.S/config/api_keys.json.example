@@ -1,0 +1,15 @@
+{
+  "gemini_api_key": "",
+  "elevenlabs_api_key": "",
+  "assistant_name": "JARVIS",
+  "user_name": "",
+  "voice_name": "Charon",
+  "wake_word_enabled": false,
+  "push_to_talk_enabled": false,
+  "hud_style": "core",
+  "ui_color": "#e8e8e8",
+  "llm_provider": "ollama",
+  "llm_url": "http://localhost:11434",
+  "llm_model": "qwen2.5-coder:7b",
+  "notes": "MODELO — copie para api_keys.json ou use .env para segredos. Nunca commite chaves reais."
+}

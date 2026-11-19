@@ -1,0 +1,1 @@
+"""actions.smarthome — domain package."""

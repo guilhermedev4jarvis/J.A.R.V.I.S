@@ -1,0 +1,11 @@
+{
+  "vehicles": [
+    {
+      "plate": "FIK5J12",
+      "model": "Honda City",
+      "owner": "Casa / Família",
+      "trust_level": "trusted",
+      "notify_on_arrival": true
+    }
+  ]
+}

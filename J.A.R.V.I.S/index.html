@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>J.A.R.V.I.S. — MARK LXI (61)</title>
+<style>
+  :root { --bg:#070b12; --panel:#0d1524; --line:#1e2d45; --cyan:#5ce1ff; --muted:#8aa0b8; --ok:#3dff9a; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: "Segoe UI", system-ui, sans-serif; background:radial-gradient(1200px 600px at 20% -10%, #13233f, var(--bg)); color:#e8f1ff; }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 32px 20px 64px; }
+  .badge { display:inline-block; border:1px solid var(--cyan); color:var(--cyan); padding:4px 10px; border-radius:999px; font-size:12px; letter-spacing:.12em; }
+  h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); margin: 12px 0 8px; }
+  .sub { color: var(--muted); margin-bottom: 24px; }
+  .hud { display:grid; gap:10px; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); margin: 24px 0; }
+  .card { background: var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 18px; }
+  .card h3 { margin:0 0 8px; font-size:15px; color:var(--cyan); }
+  .card p { margin:0; color:var(--muted); font-size:14px; line-height:1.45; }
+  .status { font-family: ui-monospace, monospace; font-size:13px; line-height:1.7; color:#cfe6ff; }
+  .status span { color: var(--ok); }
+  .btn { display:inline-block; margin-top:18px; background: linear-gradient(90deg,#1ac6ff,#5ce1ff); color:#041018; text-decoration:none; font-weight:700; padding:12px 18px; border-radius:10px; }
+  footer { margin-top:40px; color:var(--muted); font-size:13px; border-top:1px solid var(--line); padding-top:16px; }
+  footer a { color: var(--cyan); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="badge">LXI · 61</div>
+    <h1>J.A.R.V.I.S. — MARK LXI (61)</h1>
+    <p class="sub">offline-first · modular · local control · Telegram voz + texto</p>
+
+    <div class="card status">
+      <div><span>●</span> SYSTEMS NOMINAL</div>
+      <div>Biometrics: FACE → VOICE (0.75)</div>
+      <div>Listen: CONTINUOUS · Audio: CASA / RUA / HÍBRIDO</div>
+      <div>Autonomy: MISSIONS · SENTINEL · 24/7 WATCHDOGS</div>
+      <div>Security: PROTOCOLO 190 (silent) · iCSee · DISSUASÃO</div>
+      <div>Remote: TELEGRAM TEXT + VOICE · /modo_rua · /190</div>
+      <div>Offline model: qwen2.5-coder:7b</div>
+    </div>
+
+    <div class="hud">
+      <div class="card"><h3>Biometria</h3><p>Boot sequencial face → voz, threshold 0.75, overlay dedicado.</p></div>
+      <div class="card"><h3>Canal de áudio</h3><p>Casa (AudioRelay), rua (só Telegram) ou híbrido, com estado persistente.</p></div>
+      <div class="card"><h3>Telegram voz</h3><p>Áudios gravados são transcritos (STT) e executam tools; resposta com sendVoice.</p></div>
+      <div class="card"><h3>Segurança</h3><p>190 silencioso, dissuasão, caixa-preta, anti-corte de energia, sentinel iCSee.</p></div>
+    </div>
+
+    <div class="card">
+      <h3>Instalação rápida</h3>
+      <p><strong>CORE:</strong> <code>pip install -r requirements.txt && python main.py</code><br/>
+      <strong>24/7 Windows:</strong> <code>.\install_24h.ps1</code><br/>
+      <strong>Local:</strong> <code>python mainlocal.py</code></p>
+      <a class="btn" href="jarvis_project.zip">Download jarvis_project.zip</a>
+    </div>
+
+    <footer>
+      <a href="readme.md">readme.md</a> ·
+      <a href="AUTORIA.md">AUTORIA.md</a> ·
+      <a href="LICENSE">LICENSE</a><br/>
+      © 2026 Guilherme · J.A.R.V.I.S. — MARK LXI (61) · CC BY-NC 4.0
+    </footer>
+  </div>
+</body>
+</html>
+

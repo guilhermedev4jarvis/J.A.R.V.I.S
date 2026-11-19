@@ -1,0 +1,6 @@
+{
+  "mode": "assist",
+  "air_gapped": false,
+  "strict_paths": false,
+  "validate_feedback": true
+}

@@ -1,0 +1,5 @@
+{
+  "continuous_listen_window_sec": 18,
+  "end_phrases": ["obrigado", "obrigada", "só isso", "so isso", "é só", "e so", "pode parar", "chega"],
+  "vad_silence_ms": 1200
+}

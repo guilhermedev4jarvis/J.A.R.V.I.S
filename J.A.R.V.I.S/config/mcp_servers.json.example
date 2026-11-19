@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "servers": {
+    "filesystem": {
+      "enabled": true,
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "./memory",
+        "./config"
+      ],
+      "description": "Acesso seguro aos diretórios locais do projeto.",
+      "requires_internet": false,
+      "timeout_sec": 30
+    },
+    "memory": {
+      "enabled": true,
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-memory"
+      ],
+      "description": "Grafo de memória MCP local.",
+      "requires_internet": false,
+      "timeout_sec": 30
+    },
+    "github": {
+      "enabled": true,
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-github"
+      ],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      },
+      "description": "Repositórios, issues, PRs, branches e commits no GitHub.",
+      "requires_internet": true,
+      "timeout_sec": 30
+    },
+    "youtube": {
+      "enabled": true,
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@kimtaeyoon83/mcp-server-youtube-transcript"
+      ],
+      "env": {
+        "YOUTUBE_API_KEY": "${YOUTUBE_API_KEY}"
+      },
+      "description": "Transcrições, metadados e resumos de vídeos do YouTube.",
+      "requires_internet": true,
+      "timeout_sec": 30
+    },
+    "obs_studio": {
+      "enabled": true,
+      "transport": "stdio",
+      "command": "python",
+      "args": [
+        "mcp_servers/obs_mcp_server.py"
+      ],
+      "env": {
+        "OBS_WS_HOST": "${OBS_WS_HOST:-127.0.0.1}",
+        "OBS_WS_PORT": "${OBS_WS_PORT:-4455}",
+        "OBS_WS_PASSWORD": "${OBS_WS_PASSWORD}"
+      },
+      "description": "Controle do OBS Studio via obs-websocket v5.",
+      "requires_internet": false,
+      "timeout_sec": 20
+    },
+    "ai_training": {
+      "enabled": true,
+      "transport": "stdio",
+      "command": "python",
+      "args": [
+        "mcp_servers/ai_training_mcp_server.py"
+      ],
+      "env": {
+        "OLLAMA_HOST": "${OLLAMA_HOST:-http://127.0.0.1:11434}",
+        "TRAINING_DATASETS_DIR": "memory/datasets",
+        "TRAINING_MODELS_DIR": "memory/models"
+      },
+      "description": "Fine-tuning/LoRA, GPU metrics e modelos Ollama locais.",
+      "requires_internet": false,
+      "timeout_sec": 60
+    },
+    "icsee_cameras": {
+      "enabled": true,
+      "transport": "stdio",
+      "command": "python",
+      "args": [
+        "mcp_servers/icsee_mcp_server.py"
+      ],
+      "env": {
+        "ICSEE_CONFIG_PATH": "config/camera_rois.json"
+      },
+      "description": "Câmeras iCSee: snapshots, RTSP, ROI, tripwires e alertas.",
+      "requires_internet": false,
+      "timeout_sec": 25
+    },
+    "fetch": {
+      "enabled": true,
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-fetch"
+      ],
+      "description": "Fetch HTTP limpo de páginas.",
+      "requires_internet": true,
+      "timeout_sec": 30
+    },
+    "playwright": {
+      "enabled": false,
+      "transport": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@playwright/mcp"
+      ],
+      "description": "Automação de navegador Playwright.",
+      "requires_internet": true,
+      "timeout_sec": 60
+    }
+  }
+}

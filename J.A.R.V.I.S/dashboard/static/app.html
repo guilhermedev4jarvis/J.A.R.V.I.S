@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>J.A.R.V.I.S. · MARK LXI</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:      #07090f;
+      --surface: rgba(255,255,255,0.04);
+      --border:  rgba(255,255,255,0.07);
+      --accent:  #6366f1;
+      --adim:    rgba(99,102,241,0.14);
+      --text:    #dde3ed;
+      --muted:   #5e6a7e;
+      --green:   #22c55e;
+      --gdim:    rgba(34,197,94,0.14);
+    }
+    html, body {
+      height: 100%; background: var(--bg); color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      display: flex; flex-direction: column; overflow: hidden;
+    }
+
+    /* ── HEADER ── */
+    header {
+      flex-shrink: 0; display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px; border-bottom: 1px solid var(--border);
+      background: rgba(7,9,15,0.95);
+    }
+    .logo { font-size: 15px; font-weight: 700; letter-spacing: 6px; }
+    .logo em { color: var(--accent); font-style: normal; }
+    .pill {
+      display: flex; align-items: center; gap: 6px; padding: 4px 11px;
+      border-radius: 99px; background: var(--surface); border: 1px solid var(--border);
+      font-size: 10px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      color: var(--muted); transition: all 0.3s;
+    }
+    .pill.on { background: var(--gdim); border-color: rgba(34,197,94,0.3); color: var(--green); }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); transition: background 0.3s; }
+    .pill.on .dot { background: var(--green); animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .spacer { flex: 1; }
+    .enc-badge {
+      font-size: 9px; font-weight: 700; letter-spacing: 1.5px; padding: 3px 8px;
+      border-radius: 4px; display: none;
+    }
+    .enc-badge.on  { display: block; background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25); color: var(--green); }
+    .enc-badge.off { display: block; background: rgba(255,100,100,0.08); border: 1px solid rgba(255,100,100,0.2); color: #f87171; }
+    .url { font-size: 10px; font-family: monospace; color: var(--muted); padding: 4px 9px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; }
+
+    /* ── FEED ── */
+    main { flex: 1; overflow-y: auto; padding: 14px 16px 8px; display: flex; flex-direction: column; gap: 10px; }
+    main::-webkit-scrollbar { width: 3px; }
+    main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .msg { max-width: 82%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.55; animation: pop 0.18s ease; }
+    @keyframes pop { from { opacity:0; transform:translateY(4px); } }
+    .msg-j   { align-self:flex-start; background:var(--adim);   border:1px solid rgba(99,102,241,0.18); border-bottom-left-radius:4px; }
+    .msg-u   { align-self:flex-end;   background:var(--surface); border:1px solid var(--border);        border-bottom-right-radius:4px; }
+    .msg-sys { align-self:center; font-size:11px; color:var(--muted); padding:2px 0; background:transparent; border:none; letter-spacing:0.3px; }
+    .lbl { font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; opacity:0.45; margin-bottom:4px; }
+    .msg-j .lbl { color:var(--accent); }
+    .msg-u .lbl { color:var(--muted); text-align:right; }
+
+    /* ── FILE CARD ── */
+    .msg-file {
+      align-self: flex-end;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; border-bottom-right-radius: 4px;
+      padding: 11px 14px; display: flex; align-items: center; gap: 12px;
+      max-width: 82%; animation: pop 0.18s ease;
+    }
+    .fc-icon { font-size: 26px; flex-shrink: 0; }
+    .fc-meta { flex: 1; min-width: 0; }
+    .fc-lbl  { font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; opacity:0.45; color:var(--muted); margin-bottom:4px; }
+    .fc-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .fc-size { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .fc-bar-wrap { height: 3px; background: var(--border); border-radius: 2px; margin-top: 7px; overflow: hidden; }
+    .fc-bar { height: 100%; width: 0%; background: var(--accent); border-radius: 2px; transition: width 0.12s linear; }
+    .fc-status { font-size: 10px; font-weight: 700; letter-spacing: 1px; flex-shrink: 0; color: var(--muted); }
+    .fc-status.done { color: var(--green); }
+    .fc-status.err  { color: #f87171; }
+    .fc-dl { display:block; margin-top:6px; font-size:11px; color:var(--accent); text-decoration:none; font-weight:600; }
+    .fc-dl:hover { opacity: 0.8; }
+
+    /* ── FOOTER ── */
+    footer { flex-shrink:0; padding:10px 14px; border-top:1px solid var(--border); background:rgba(7,9,15,0.95); display:flex; gap:8px; align-items:center; }
+    #inp { flex:1; padding:11px 14px; background:var(--surface); border:1.5px solid var(--border); border-radius:12px; color:var(--text); font-size:14px; outline:none; transition:border-color 0.15s; }
+    #inp:focus { border-color: var(--accent); }
+    #inp::placeholder { color: var(--muted); }
+    .btn { padding:11px 15px; border:none; border-radius:12px; font-size:11px; font-weight:700; letter-spacing:1.5px; cursor:pointer; transition:opacity 0.15s,transform 0.1s; }
+    .btn:active { transform: scale(0.96); }
+    .btn:hover  { opacity: 0.82; }
+    .btn-send { background: var(--accent); color: #fff; }
+    .btn-wake { background:var(--surface); border:1px solid var(--border); color:var(--muted); display:none; }
+    .btn-wake.show { display:block; color:var(--green); border-color:rgba(34,197,94,0.35); }
+    .btn-attach {
+      background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+      padding: 11px 13px; font-size: 16px; line-height: 1; border-radius: 12px;
+      cursor: pointer; transition: opacity 0.15s, transform 0.1s; display: flex;
+      align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .btn-attach:hover  { opacity: 0.82; border-color: var(--accent); color: var(--accent); }
+    .btn-attach:active { transform: scale(0.96); }
+
+    /* ── MIC BUTTON ── */
+    #mic-btn {
+      background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+      padding: 11px 13px; font-size: 16px; line-height: 1; border-radius: 12px;
+      cursor: pointer; transition: opacity 0.15s, transform 0.1s, background 0.2s, border-color 0.2s;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    #mic-btn:hover  { opacity: 0.82; border-color: var(--accent); color: var(--accent); }
+    #mic-btn:active { transform: scale(0.96); }
+    #mic-btn.recording {
+      background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.45); color: #ef4444;
+      animation: mic-pulse 1s ease-in-out infinite;
+    }
+    #mic-btn.unsupported { opacity: 0.3; cursor: not-allowed; }
+    @keyframes mic-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.65;transform:scale(0.97)} }
+
+    /* ── TOAST ── */
+    #toast {
+      position:fixed; top:66px; left:50%; transform:translateX(-50%) translateY(-8px);
+      background:rgba(34,197,94,0.16); border:1px solid rgba(34,197,94,0.4);
+      color:var(--green); font-size:12px; font-weight:700; letter-spacing:1px;
+      padding:7px 18px; border-radius:99px;
+      opacity:0; transition:opacity 0.22s,transform 0.22s;
+      pointer-events:none; white-space:nowrap;
+    }
+    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+    /* ── MARK LXI panels ── */
+    .lx-wrap { max-width: 920px; margin: 0 auto 12px; padding: 0 14px; }
+    .lx-tabs { display:flex; gap:6px; flex-wrap:wrap; margin: 10px 0 8px; }
+    .lx-tab {
+      background: var(--surface); border:1px solid var(--border); color: var(--muted);
+      padding: 7px 12px; border-radius: 999px; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.6px; cursor: pointer; text-transform: uppercase;
+    }
+    .lx-tab.active { color: #fff; border-color: var(--accent); background: rgba(59,130,246,0.18); }
+    .lx-panel {
+      display:none; background: rgba(15,23,42,0.55); border:1px solid var(--border);
+      border-radius: 14px; padding: 12px 14px; margin-bottom: 10px;
+      max-height: 280px; overflow:auto;
+    }
+    .lx-panel.active { display:block; }
+    .lx-panel h3 { margin:0 0 8px; font-size:13px; letter-spacing:1px; color: var(--accent); text-transform:uppercase; }
+    .lx-row { display:flex; justify-content:space-between; gap:10px; align-items:center;
+      padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-size: 12px; }
+    .lx-row:last-child { border-bottom:none; }
+    .lx-muted { color: var(--muted); font-size: 11px; }
+    .lx-btn {
+      background: var(--surface); border:1px solid var(--border); color: var(--green);
+      border-radius: 8px; padding: 4px 10px; font-size: 11px; cursor: pointer; font-weight: 700;
+    }
+    .lx-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .lx-search { width:100%; background: var(--surface); border:1px solid var(--border);
+      color: inherit; border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div id="toast"></div>
+  <header>
+    <div class="logo"><em>J.A.R.V.I.S.</em></div>
+    <div class="pill" id="pill"><span class="dot"></span><span id="st">Connecting</span></div>
+    <div class="enc-badge" id="enc">AES-GCM</div>
+    <div class="spacer"></div>
+    <div class="url">__IP__:__PORT__</div>
+  </header>
+  
+  <div class="lx-wrap" id="lx-panel-root">
+    <div class="lx-tabs">
+      <button class="lx-tab active" data-lx="missions" onclick="lxTab(this)">Missões</button>
+      <button class="lx-tab" data-lx="triggers" onclick="lxTab(this)">Gatilhos</button>
+      <button class="lx-tab" data-lx="timeline" onclick="lxTab(this)">Timeline</button>
+      <button class="lx-tab" data-lx="audio" onclick="lxTab(this)">Áudio</button>
+      <button class="lx-tab" data-lx="security" onclick="lxTab(this)">Guardião</button>
+    </div>
+    <div class="lx-panel active" id="lx-missions"><h3>Missões Autônomas</h3><div class="lx-muted">Carregando…</div></div>
+    <div class="lx-panel" id="lx-triggers"><h3>Gatilhos de Contexto</h3><div class="lx-muted">Carregando…</div></div>
+    <div class="lx-panel" id="lx-timeline"><h3>Timeline de Tela</h3>
+      <input class="lx-search" id="lx-tl-q" placeholder="Buscar na timeline…" onkeydown="if(event.key==='Enter')lxLoadTimeline()">
+      <div id="lx-tl-body" class="lx-muted">Carregando…</div>
+    </div>
+    <div class="lx-panel" id="lx-audio"><h3>Mixer por App</h3><div class="lx-muted">Carregando…</div></div>
+    <div class="lx-panel" id="lx-security"><h3>Monitor de Segurança</h3><div class="lx-muted">Carregando…</div></div>
+  </div>
+
+  <main id="feed"></main>
+  <footer>
+    <input id="inp" placeholder="Send a command to JARVIS…" autocomplete="off">
+    <label class="btn-attach" for="file-inp" title="Send file">📎</label>
+    <input type="file" id="file-inp" multiple accept="*/*" style="display:none">
+    <button id="mic-btn" onclick="doMic()" title="Voice command">🎤</button>
+    <button class="btn btn-wake" id="wake" onclick="doWake()">WAKE</button>
+    <button class="btn btn-send" onclick="doSend()">SEND</button>
+  </footer>
+
+  <script>
+    // ── Auth — bearer token ───────────────────────────────────────────────────
+    const _authToken  = sessionStorage.getItem('jarvis_token');
+    const _sessionKey = sessionStorage.getItem('jarvis_key');
+
+    if (!_authToken) {
+      location.replace('/login');
+    }
+
+    function _authHeader() { return { 'Authorization': `Bearer ${_authToken}` }; }
+    function _authFetch(url, opts = {}) {
+      opts.headers = Object.assign({}, opts.headers, _authHeader());
+      return fetch(url, opts);
+    }
+
+    // ── AES-256-GCM encryption (Web Crypto) ──────────────────────────────────
+    //
+    // WHAT CHANGED, AND WHY THE LIBRARY WENT WITH IT
+    //   This used CryptoJS with AES-CBC and a key of SHA256(pairingKey+salt).
+    //   Two problems, both on the server side of the same conversation:
+    //
+    //   CBC hides a message but does not authenticate it, so an attacker on the
+    //   same network could alter the ciphertext and the assistant would act on
+    //   whatever fell out. GCM refuses a message that has been touched.
+    //
+    //   One round of SHA-256 over an eight-character key is an offline search
+    //   measured in seconds on a GPU. PBKDF2 at 200k rounds makes each guess
+    //   about a hundred thousand times more expensive, and costs this page one
+    //   derivation at pairing time.
+    //
+    //   Both are native in Web Crypto, so the 60 KB CryptoJS bundle is no
+    //   longer needed. crypto.subtle exists only in a secure context, which is
+    //   why the server now insists on HTTPS instead of quietly falling back.
+    const _AES_SALT   = 'JARVIS-DASHBOARD-v1';
+    const _KDF_ROUNDS = 200000;
+    let _aesKey = null;
+
+    async function _initCrypto(key) {
+      if (!window.crypto || !crypto.subtle) return false;
+      try {
+        const enc  = new TextEncoder();
+        const base = await crypto.subtle.importKey(
+          'raw', enc.encode(key), 'PBKDF2', false, ['deriveKey']);
+        _aesKey = await crypto.subtle.deriveKey(
+          { name: 'PBKDF2', salt: enc.encode(_AES_SALT),
+            iterations: _KDF_ROUNDS, hash: 'SHA-256' },
+          base, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
+        return true;
+      } catch { return false; }
+    }
+
+    async function _encrypt(plaintext) {
+      if (!_aesKey) return null;
+      try {
+        // A fresh 12-byte nonce per message. Reusing one under the same key is
+        // the single way to break GCM, so it is generated here and never
+        // stored, cached or derived from anything.
+        const nonce = crypto.getRandomValues(new Uint8Array(12));
+        const ct    = new Uint8Array(await crypto.subtle.encrypt(
+          { name: 'AES-GCM', iv: nonce },
+          _aesKey, new TextEncoder().encode(plaintext)));
+        const out = new Uint8Array(nonce.length + ct.length);
+        out.set(nonce, 0);
+        out.set(ct, nonce.length);
+        let bin = '';
+        for (const b of out) bin += String.fromCharCode(b);
+        return btoa(bin);
+      } catch { return null; }
+    }
+
+    let _encReady  = false;
+    const encBadge = document.getElementById('enc');
+    encBadge.textContent = 'AES-GCM';
+    // Deriving the key is PBKDF2 over 200k rounds, so it is awaited rather than
+    // done inline — on a phone that is a few hundred milliseconds, and blocking
+    // the parse for it would stall the whole page.
+    (async () => {
+      _encReady = _sessionKey ? await _initCrypto(_sessionKey) : false;
+      if (_encReady) {
+        encBadge.className = 'enc-badge on';
+      } else {
+        encBadge.className = 'enc-badge off';
+        encBadge.textContent = 'NO ENC';
+      }
+    })();
+
+    // ── WebSocket ─────────────────────────────────────────────────────────────
+    const feed  = document.getElementById('feed');
+    const pill  = document.getElementById('pill');
+    const stTxt = document.getElementById('st');
+    const wake  = document.getElementById('wake');
+
+    const _wsProto = location.protocol === 'https:' ? 'wss' : 'ws';
+    const _wsUrl   = `${_wsProto}://${location.host}/ws?token=${encodeURIComponent(_authToken)}`;
+    const ws       = new WebSocket(_wsUrl);
+
+    ws.onopen    = () => { sys('Remote session active.'); toast('Connected to JARVIS'); };
+    ws.onclose   = () => sys('Connection lost — refresh to reconnect.');
+    ws.onerror   = () => sys('Connection error.');
+    ws.onmessage = (e) => {
+      const m = JSON.parse(e.data);
+      if (m.type === 'log')           append(m.speaker, m.text);
+      if (m.type === 'status')        setStatus(m.state);
+      if (m.type === 'wake')          sys('Wake word detected — connecting…');
+      if (m.type === 'sys')           sys(m.text);
+      if (m.type === 'file_received') _onFileReceived(m);
+    };
+
+    function setStatus(s) {
+      if (s === 'active') {
+        pill.className = 'pill on'; stTxt.textContent = 'Active'; wake.classList.remove('show');
+      } else {
+        pill.className = 'pill'; stTxt.textContent = 'Sleeping'; wake.classList.add('show');
+      }
+    }
+
+    function append(speaker, text) {
+      const d = document.createElement('div');
+      if (speaker === 'jarvis') {
+        d.className = 'msg msg-j';
+        d.innerHTML = `<div class="lbl">Jarvis</div>${esc(text)}`;
+      } else {
+        d.className = 'msg msg-u';
+        d.innerHTML = `<div class="lbl">You</div>${esc(text)}`;
+      }
+      feed.appendChild(d);
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    function sys(text) {
+      const d = document.createElement('div');
+      d.className = 'msg msg-sys'; d.textContent = text;
+      feed.appendChild(d); feed.scrollTop = feed.scrollHeight;
+    }
+
+    function esc(s) {
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ── File helpers ──────────────────────────────────────────────────────────
+    function _fileIcon(name) {
+      const ext = (name.split('.').pop() || '').toLowerCase();
+      if (['jpg','jpeg','png','gif','webp','heic','heif','avif','bmp','svg'].includes(ext)) return '🖼️';
+      if (['mp4','mov','avi','mkv','webm','m4v','3gp'].includes(ext))                       return '🎬';
+      if (['mp3','m4a','wav','flac','aac','ogg','opus'].includes(ext))                      return '🎵';
+      if (['pdf'].includes(ext))                                                             return '📋';
+      if (['doc','docx','txt','md','rtf','odt'].includes(ext))                              return '📝';
+      if (['xls','xlsx','csv','ods'].includes(ext))                                         return '📊';
+      if (['ppt','pptx','odp'].includes(ext))                                               return '📑';
+      if (['zip','rar','7z','tar','gz','bz2','xz'].includes(ext))                          return '📦';
+      if (['apk','exe','dmg','deb','rpm','msi'].includes(ext))                              return '⚙️';
+      return '📎';
+    }
+
+    function _fmtSize(bytes) {
+      if (bytes < 1024)             return bytes + ' B';
+      if (bytes < 1024 * 1024)     return (bytes / 1024).toFixed(1) + ' KB';
+      if (bytes < 1024 ** 3)       return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+      return (bytes / 1024 ** 3).toFixed(2) + ' GB';
+    }
+
+    // ── File upload (phone → computer) ────────────────────────────────────────
+    function _uploadFile(file) {
+      const id = 'fc_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+
+      // Create file card in feed
+      const card = document.createElement('div');
+      card.className = 'msg-file';
+      card.id = id;
+      card.innerHTML = `
+        <div class="fc-icon">${_fileIcon(file.name)}</div>
+        <div class="fc-meta">
+          <div class="fc-lbl">Sending</div>
+          <div class="fc-name">${esc(file.name)}</div>
+          <div class="fc-size">${_fmtSize(file.size)}</div>
+          <div class="fc-bar-wrap"><div class="fc-bar" id="${id}_bar"></div></div>
+        </div>
+        <div class="fc-status" id="${id}_st">0%</div>
+      `;
+      feed.appendChild(card);
+      feed.scrollTop = feed.scrollHeight;
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/upload');
+      xhr.setRequestHeader('Authorization', `Bearer ${_authToken}`);
+
+      xhr.upload.onprogress = (e) => {
+        if (!e.lengthComputable) return;
+        const pct = Math.round(e.loaded / e.total * 100);
+        const bar = document.getElementById(`${id}_bar`);
+        const st  = document.getElementById(`${id}_st`);
+        if (bar) bar.style.width = pct + '%';
+        if (st)  st.textContent  = pct + '%';
+      };
+
+      xhr.onload = () => {
+        const bar  = document.getElementById(`${id}_bar`);
+        const st   = document.getElementById(`${id}_st`);
+        const meta = card.querySelector('.fc-meta');
+        const lbl  = card.querySelector('.fc-lbl');
+        if (xhr.status === 200) {
+          let savedName = file.name;
+          try { savedName = JSON.parse(xhr.responseText).name || file.name; } catch {}
+          const dlUrl = `/uploads/${encodeURIComponent(savedName)}?token=${encodeURIComponent(_authToken)}`;
+          if (bar)  { bar.style.width = '100%'; bar.style.background = 'var(--green)'; }
+          if (st)   { st.textContent = '✓'; st.className = 'fc-status done'; }
+          if (lbl)  lbl.textContent = 'Sent';
+          if (meta) meta.insertAdjacentHTML('beforeend',
+            `<a class="fc-dl" href="${dlUrl}" download="${esc(savedName)}">⬇ Download back</a>`);
+          toast('File sent!');
+        } else {
+          let errMsg = 'Upload failed';
+          try { errMsg = JSON.parse(xhr.responseText).error || errMsg; } catch {}
+          if (bar) bar.style.background = '#f87171';
+          if (st)  { st.textContent = 'ERR'; st.className = 'fc-status err'; }
+          if (lbl) lbl.textContent = errMsg;
+        }
+      };
+
+      xhr.onerror = () => {
+        const st  = document.getElementById(`${id}_st`);
+        const lbl = card.querySelector('.fc-lbl');
+        if (st)  { st.textContent = 'ERR'; st.className = 'fc-status err'; }
+        if (lbl) lbl.textContent = 'Connection error';
+      };
+
+      const fd = new FormData();
+      fd.append('file', file);
+      xhr.send(fd);
+    }
+
+    // File received by another WebSocket client (e.g., second open tab)
+    function _onFileReceived(m) {
+      const dlUrl = `/uploads/${encodeURIComponent(m.name)}?token=${encodeURIComponent(_authToken)}`;
+      const card  = document.createElement('div');
+      card.className = 'msg-file';
+      card.innerHTML = `
+        <div class="fc-icon">${_fileIcon(m.name)}</div>
+        <div class="fc-meta">
+          <div class="fc-lbl">Received</div>
+          <div class="fc-name">${esc(m.name)}</div>
+          <div class="fc-size">${_fmtSize(m.size)}</div>
+          <a class="fc-dl" href="${dlUrl}" download="${esc(m.name)}">⬇ Download</a>
+        </div>
+        <div class="fc-status done">✓</div>
+      `;
+      feed.appendChild(card);
+      feed.scrollTop = feed.scrollHeight;
+      toast('File received on computer!');
+    }
+
+    // File input change handler
+    document.getElementById('file-inp').addEventListener('change', function () {
+      Array.from(this.files).forEach(_uploadFile);
+      this.value = ''; // reset so the same file can be re-sent
+    });
+
+    // ── Commands ──────────────────────────────────────────────────────────────
+    async function doSend() {
+      const inp = document.getElementById('inp');
+      const txt = inp.value.trim();
+      if (!txt) return;
+      inp.value = '';
+      append('user', txt);
+      const enc  = await _encrypt(txt);
+      const body = enc ? { enc } : { text: txt };
+      _authFetch('/api/command', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+    }
+
+    function doWake() {
+      sys('Sending wake signal…');
+      _authFetch('/api/wake', { method: 'POST' });
+    }
+
+    document.getElementById('inp').addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); }
+    });
+
+    // ── Toast ─────────────────────────────────────────────────────────────────
+    let _toastTimer;
+    function toast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg; t.classList.add('show');
+      clearTimeout(_toastTimer);
+      _toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    // ── Real-time Voice — PCM16 WebSocket → Gemini Live ──────────────────────
+    const micBtn  = document.getElementById('mic-btn');
+    let _voiceWs  = null;
+    let _audioCtx = null;
+    let _micStm   = null;
+    let _audioNd  = null;
+
+    function _micIdle() {
+      micBtn.innerHTML = '🎤';
+      micBtn.title     = 'Voice — tap to speak';
+      micBtn.classList.remove('recording');
+    }
+
+    // Float32 PCM → resample to 16 kHz + convert to Int16
+    function _f32toPcm16(f32, srcRate) {
+      let s = f32;
+      if (srcRate !== 16000) {
+        const ratio = srcRate / 16000;
+        const len   = Math.round(f32.length / ratio);
+        s = new Float32Array(len);
+        for (let i = 0; i < len; i++)
+          s[i] = f32[Math.min(Math.round(i * ratio), f32.length - 1)];
+      }
+      const out = new Int16Array(s.length);
+      for (let i = 0; i < s.length; i++)
+        out[i] = Math.max(-32768, Math.min(32767, Math.round(s[i] * 32768)));
+      return out.buffer;
+    }
+
+    function _showVoiceSetup() {
+      if (document.getElementById('voice-setup')) return; // show once
+      const origin = location.origin;
+      const card = document.createElement('div');
+      card.id = 'voice-setup';
+      card.style.cssText = [
+        'align-self:stretch', 'background:rgba(99,102,241,0.07)',
+        'border:1px solid rgba(99,102,241,0.22)', 'border-radius:14px',
+        'padding:16px 18px', 'font-size:13px', 'line-height:1.8',
+        'animation:pop 0.18s ease'
+      ].join(';');
+      card.innerHTML =
+        '<div style="font-weight:700;color:#818cf8;letter-spacing:.5px;margin-bottom:10px">🎤 One-time voice setup</div>' +
+        '<ol style="padding-left:18px;color:#8899aa;margin:0;display:flex;flex-direction:column;gap:4px">' +
+        '<li>Open a new tab → go to <span style="background:rgba(255,255,255,0.07);padding:1px 6px;border-radius:4px;font-family:monospace;font-size:12px">chrome://flags</span></li>' +
+        '<li>Search: <strong style="color:#dde3ed">Insecure origins treated as secure</strong></li>' +
+        '<li>Paste this URL into the box:<br><span id="flags-url" style="background:rgba(255,255,255,0.07);padding:2px 8px;border-radius:4px;font-family:monospace;font-size:11px;user-select:all;cursor:pointer">' + esc(origin) + '</span></li>' +
+        '<li>Set to <strong style="color:#22c55e">Enabled</strong> → tap <strong style="color:#dde3ed">Relaunch</strong></li>' +
+        '<li>Return here and tap 🎤</li>' +
+        '</ol>';
+      feed.appendChild(card);
+      feed.scrollTop = feed.scrollHeight;
+      // tap to copy
+      card.querySelector('#flags-url').addEventListener('click', () => {
+        navigator.clipboard?.writeText(origin).then(() => toast('URL copied!')).catch(() => {});
+      });
+    }
+
+    async function doMic() {
+      if (_voiceWs) { _stopVoice(); return; }
+
+      if (!navigator.mediaDevices?.getUserMedia) {
+        _showVoiceSetup();
+        return;
+      }
+      let stream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true },
+        });
+      } catch (e) {
+        sys(e.name === 'NotAllowedError'
+          ? 'Microphone denied — tap the address bar lock and allow microphone.'
+          : 'Mic error: ' + e.message);
+        return;
+      }
+
+      // 16 kHz context (fall back to native rate — _f32toPcm16 resamples)
+      let ctx;
+      try { ctx = new AudioContext({ sampleRate: 16000 }); }
+      catch (_) { ctx = new AudioContext(); }
+      if (ctx.state === 'suspended') await ctx.resume();
+
+      const wsProto = location.protocol === 'https:' ? 'wss' : 'ws';
+      const ws = new WebSocket(
+        `${wsProto}://${location.host}/ws/phone-audio?token=${encodeURIComponent(_authToken)}`
+      );
+      ws.binaryType = 'arraybuffer';
+
+      ws.onopen = async () => {
+        const rate = ctx.sampleRate;
+        const src  = ctx.createMediaStreamSource(stream);
+
+        // AudioWorklet (modern) — runs in dedicated audio thread
+        const wCode = `class J extends AudioWorkletProcessor{process(i){const c=i[0]?.[0];if(c)this.port.postMessage(c.slice());return true;}}registerProcessor('j',J);`;
+        try {
+          const burl = URL.createObjectURL(new Blob([wCode], { type: 'application/javascript' }));
+          await ctx.audioWorklet.addModule(burl);
+          URL.revokeObjectURL(burl);
+          const nd = new AudioWorkletNode(ctx, 'j');
+          // Buffer to 1024 samples (64 ms at 16 kHz) before sending —
+          // matches PC mic chunk size, prevents queue flooding on the server.
+          let _pbuf = [], _plen = 0;
+          nd.port.onmessage = e => {
+            const chunk = new Int16Array(_f32toPcm16(e.data, rate));
+            _pbuf.push(chunk); _plen += chunk.length;
+            if (_plen >= 1024) {
+              const out = new Int16Array(_plen); let off = 0;
+              for (const c of _pbuf) { out.set(c, off); off += c.length; }
+              if (ws.readyState === 1) ws.send(out.buffer);
+              _pbuf = []; _plen = 0;
+            }
+          };
+          src.connect(nd);
+          _audioNd = nd;
+        } catch (_) {
+          // ScriptProcessor fallback (deprecated, still works everywhere)
+          const sp = ctx.createScriptProcessor(4096, 1, 1);
+          sp.onaudioprocess = e => {
+            if (ws.readyState === 1) ws.send(_f32toPcm16(e.inputBuffer.getChannelData(0), rate));
+          };
+          src.connect(sp); sp.connect(ctx.destination);
+          _audioNd = sp;
+        }
+
+        micBtn.innerHTML = '⏹';
+        micBtn.title     = 'Tap to stop';
+        micBtn.classList.add('recording');
+        sys('Voice live — speak now');
+        toast('🎤 Live');
+      };
+
+      ws.onclose = () => { _stopVoice(); };
+      ws.onerror = () => { sys('Voice connection failed.'); _stopVoice(); };
+
+      _voiceWs  = ws;
+      _audioCtx = ctx;
+      _micStm   = stream;
+    }
+
+    function _stopVoice() {
+      if (_audioNd)  { try { _audioNd.disconnect(); }  catch (_) {}; _audioNd  = null; }
+      if (_audioCtx) { try { _audioCtx.close(); }      catch (_) {}; _audioCtx = null; }
+      if (_micStm)   { _micStm.getTracks().forEach(t => t.stop()); _micStm = null; }
+      if (_voiceWs)  {
+        const w = _voiceWs; _voiceWs = null;
+        if (w.readyState < 2) w.close();
+      }
+      _micIdle();
+    }
+  
+  // ── MARK LXI dashboard panels ──
+  function lxTab(btn) {
+    document.querySelectorAll('.lx-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.lx-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const id = 'lx-' + btn.getAttribute('data-lx');
+    const panel = document.getElementById(id);
+    if (panel) panel.classList.add('active');
+    if (btn.dataset.lx === 'missions') lxLoadMissions();
+    if (btn.dataset.lx === 'triggers') lxLoadTriggers();
+    if (btn.dataset.lx === 'timeline') lxLoadTimeline();
+    if (btn.dataset.lx === 'audio') lxLoadAudio();
+    if (btn.dataset.lx === 'security') lxLoadSecurity();
+  }
+
+  async function lxGet(url) {
+    const r = await _authFetch(url, { method: 'GET' });
+    if (!r) return null;
+    try { return await r.json(); } catch { return null; }
+  }
+  async function lxPost(url, body) {
+    const r = await _authFetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body || {})
+    });
+    if (!r) return null;
+    try { return await r.json(); } catch { return null; }
+  }
+
+  async function lxLoadMissions() {
+    const el = document.getElementById('lx-missions');
+    const data = await lxGet('/api/missions');
+    if (!data || !data.ok) { el.innerHTML = '<h3>Missões</h3><div class="lx-muted">Sem acesso ou vazio.</div>'; return; }
+    const rows = (data.missions || []).map(m => {
+      const st = (m.steps || []).map(s => s.status).join(', ');
+      return `<div class="lx-row"><div><b>${esc(m.id||'')}</b> · ${esc((m.goal||'').slice(0,60))}<div class="lx-muted">${esc(m.status||'')} · ${esc(st)}</div></div>
+        <button class="lx-btn" onclick="lxResume('${esc(m.id||'')}')">Resume</button></div>`;
+    }).join('') || '<div class="lx-muted">Nenhuma missão.</div>';
+    el.innerHTML = '<h3>Missões Autônomas</h3>' + rows;
+  }
+  async function lxResume(id) {
+    const r = await lxPost('/api/missions/resume', { mission_id: id });
+    toast(r && r.ok ? 'Resume enviado' : 'Falha ao retomar');
+    lxLoadMissions();
+  }
+  async function lxLoadTriggers() {
+    const el = document.getElementById('lx-triggers');
+    const data = await lxGet('/api/triggers');
+    if (!data || !data.ok) { el.innerHTML = '<h3>Gatilhos</h3><div class="lx-muted">Sem dados.</div>'; return; }
+    const rows = (data.rules || []).map(r => {
+      const on = r.enabled !== false;
+      return `<div class="lx-row"><div><b>${esc(r.name||r.id||'')}</b><div class="lx-muted">${esc((r.condition&&r.condition.type)||'')}</div></div>
+        <button class="lx-btn" onclick="lxToggleTrigger('${esc(r.id||'')}', ${on?'false':'true'})">${on?'ON→OFF':'OFF→ON'}</button></div>`;
+    }).join('') || '<div class="lx-muted">Nenhuma regra.</div>';
+    el.innerHTML = `<h3>Gatilhos de Contexto</h3><div class="lx-muted">Global: ${data.enabled?'enabled':'disabled'}</div>` + rows;
+  }
+  async function lxToggleTrigger(id, enabled) {
+    await lxPost('/api/triggers/toggle', { id, enabled });
+    lxLoadTriggers();
+  }
+  async function lxLoadTimeline() {
+    const q = (document.getElementById('lx-tl-q') || {}).value || '';
+    const url = q ? ('/api/timeline?q=' + encodeURIComponent(q)) : '/api/timeline';
+    const data = await lxGet(url);
+    const body = document.getElementById('lx-tl-body');
+    if (!body) return;
+    if (!data || !data.ok) { body.innerHTML = 'Sem dados.'; return; }
+    body.innerHTML = (data.items || []).map(i =>
+      `<div class="lx-row"><div><b>${esc(i.window_title||'')}</b><div class="lx-muted">${esc(i.when||'')} · ${esc((i.snippet||'').slice(0,80))}</div></div></div>`
+    ).join('') || '<div class="lx-muted">Timeline vazia.</div>';
+  }
+  async function lxLoadAudio() {
+    const el = document.getElementById('lx-audio');
+    const data = await lxGet('/api/audio/apps');
+    if (!data || !data.ok) { el.innerHTML = '<h3>Áudio</h3><div class="lx-muted">Indisponível (Windows/pycaw).</div>'; return; }
+    el.innerHTML = '<h3>Mixer por App</h3><div class="lx-muted">' + esc(String(data.result||'').slice(0,500)) + '</div>';
+  }
+  async function lxLoadSecurity() {
+    const el = document.getElementById('lx-security');
+    const data = await lxGet('/api/security/intruders');
+    if (!data || !data.ok) { el.innerHTML = '<h3>Guardião</h3><div class="lx-muted">Sem dados.</div>'; return; }
+    const active = data.status && data.status.active;
+    const ev = (data.events || []).slice(0,10).map(e =>
+      `<div class="lx-row"><div>${esc(e.event||'event')}<div class="lx-muted">${esc(JSON.stringify(e).slice(0,120))}</div></div></div>`
+    ).join('') || '<div class="lx-muted">Sem eventos.</div>';
+    el.innerHTML = `<h3>Monitor de Segurança</h3><div class="lx-muted">Intruder alert: <b>${active?'ARMED':'idle'}</b></div>` + ev;
+  }
+  // initial soft load when auth ready
+  setTimeout(() => { try { lxLoadMissions(); } catch(e){} }, 1500);
+
+</script>
+
+<!-- JARVIS Part2 Live / ROI Editor -->
+<section id="tab-live" class="panel" style="margin:12px;padding:12px;border:1px solid #1e2d45;border-radius:12px;background:#0d1524;color:#e8f1ff">
+  <h2 style="color:#5ce1ff">Ao Vivo</h2>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+    <div>
+      <h3>Eventos</h3>
+      <div id="live-events" style="max-height:240px;overflow:auto;font-family:monospace;font-size:12px"></div>
+    </div>
+    <div>
+      <h3>Status</h3>
+      <div id="live-wifi">Wi-Fi: …</div>
+      <div id="live-alpr">ALPR: …</div>
+    </div>
+  </div>
+  <h3>Editor ROI / Tripwire</h3>
+  <select id="roi-cam"><option value="gate">gate</option><option value="interior">interior</option></select>
+  <button id="roi-reload">Recarregar</button>
+  <button id="roi-save">Salvar polígono</button>
+  <canvas id="roi-canvas" width="640" height="360" style="max-width:100%;border:1px solid #333;background:#111"></canvas>
+  <p style="font-size:12px;color:#8aa0b8">Clique para adicionar vértices do ROI. Shift+clique define tripwire p1/p2.</p>
+</section>
+<script>
+(function(){
+  const evBox = document.getElementById('live-events');
+  function paintEvents(list){
+    if(!evBox) return;
+    evBox.innerHTML = (list||[]).slice().reverse().map(e =>
+      `<div>• <b>${e.event||'?'}</b> ${JSON.stringify(e).slice(0,120)}</div>`
+    ).join('');
+  }
+  try {
+    const es = new EventSource('/api/events/stream');
+    es.onmessage = (m) => { try { paintEvents(JSON.parse(m.data)); } catch(e){} };
+  } catch(e) {}
+  async function refreshCards(){
+    try {
+      const w = await fetch('/api/wifi/devices').then(r=>r.json());
+      document.getElementById('live-wifi').textContent = 'Wi-Fi: ' + ((w.devices||[]).length) + ' dispositivos';
+    } catch(e){}
+    try {
+      const a = await fetch('/api/alpr/last').then(r=>r.json());
+      document.getElementById('live-alpr').textContent = 'ALPR: ' + (a.plate||'—') + ' (' + (a.status||'') + ')';
+    } catch(e){}
+  }
+  setInterval(refreshCards, 5000); refreshCards();
+
+  const canvas = document.getElementById('roi-canvas');
+  if(!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let pts = [];
+  let tw = [];
+  let modeTw = false;
+  canvas.addEventListener('click', (ev) => {
+    const r = canvas.getBoundingClientRect();
+    const x = (ev.clientX - r.left) / r.width;
+    const y = (ev.clientY - r.top) / r.height;
+    if (ev.shiftKey) {
+      tw.push([x,y]);
+      if (tw.length > 2) tw = tw.slice(-2);
+    } else {
+      pts.push([x,y]);
+    }
+    draw();
+  });
+  function draw(){
+    ctx.fillStyle = '#111'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      ctx.strokeStyle = '#5ce1ff'; ctx.beginPath();
+      pts.forEach((p,i)=>{ const X=p[0]*canvas.width, Y=p[1]*canvas.height; if(i===0) ctx.moveTo(X,Y); else ctx.lineTo(X,Y);});
+      if(pts.length>2) ctx.closePath(); ctx.stroke();
+      if(tw.length>=2){ ctx.strokeStyle='#ff5c5c'; ctx.beginPath();
+        ctx.moveTo(tw[0][0]*canvas.width, tw[0][1]*canvas.height);
+        ctx.lineTo(tw[1][0]*canvas.width, tw[1][1]*canvas.height); ctx.stroke(); }
+    };
+    img.src = '/api/camera/snapshot/' + (document.getElementById('roi-cam').value||'gate') + '?t=' + Date.now();
+  }
+  document.getElementById('roi-reload')?.addEventListener('click', draw);
+  document.getElementById('roi-save')?.addEventListener('click', async () => {
+    const cam = document.getElementById('roi-cam').value;
+    const cur = await fetch('/api/camera/rois').then(r=>r.json());
+    cur.cameras = cur.cameras || {};
+    cur.cameras[cam] = cur.cameras[cam] || {camera_id: cam, polygons: [], tripwires: []};
+    if (pts.length >= 3) {
+      cur.cameras[cam].polygons = [{zone: cam==='interior'?'porta_interna':'portao_secundario', points: pts}];
+    }
+    if (tw.length >= 2) {
+      cur.cameras[cam].tripwires = [{name: 'editado', p1: tw[0], p2: tw[1], intrusion_direction: 'outside_to_inside'}];
+    }
+    await fetch('/api/camera/rois', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(cur)});
+    alert('ROI/tripwire salvos');
+  });
+  draw();
+})();
+</script>
+
+</body>
+</html>

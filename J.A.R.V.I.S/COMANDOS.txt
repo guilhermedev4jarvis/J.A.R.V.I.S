@@ -1,0 +1,31 @@
+========================================
+  J.A.R.V.I.S. MARK LXI — COMO INICIAR
+========================================
+
+Configure a API pelo arquivo .env antes de iniciar:
+  GEMINI_API_KEY=SUACHAVEAQUI
+
+--- OPCAO 1: duplo clique ---
+  INICIAR.bat
+
+--- OPCAO 2: PowerShell ---
+
+cd pasta\J.A.R.V.I.S
+
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+
+# ffmpeg (se ainda nao tiver)
+winget install Gyan.FFmpeg
+
+Remove-Item -Force .\config\secrets.vault -ErrorAction SilentlyContinue
+
+# SUBIR (projeto novo usa pacote main/)
+python -m main
+
+--- proximas vezes ---
+cd pasta\J.A.R.V.I.S
+.\.venv\Scripts\Activate.ps1
+python -m main

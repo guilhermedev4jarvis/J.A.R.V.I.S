@@ -1,0 +1,20 @@
+{
+  "version": "MARK LXI",
+  "actions_referencia": [
+    {"name": "protocolo", "risk": "autonomous", "notes": "190 silencioso multi-canal"},
+    {"name": "sentinel_patrol", "risk": "review", "notes": "ronda e modo ausente"},
+    {"name": "leitor_placas_alpr", "risk": "safe", "notes": "FIK5J12 Honda City"},
+    {"name": "offline", "risk": "safe", "notes": "bunker Ollama"},
+    {"name": "mover_downloads", "risk": "review", "notes": "Downloads -> projeto"},
+    {"name": "mission_planner", "risk": "review", "notes": "cadeias multi-tool"},
+    {"name": "telegram_commander", "risk": "review", "notes": "comandos remotos autorizados"},
+    {"name": "daily_ops", "risk": "safe", "notes": "briefing + finanças"},
+    {"name": "diario_cognitivo", "risk": "safe", "notes": "retrospectiva semanal"},
+    {"name": "lista_compras", "risk": "safe", "notes": "emite shopping.item_added"},
+    {"name": "cacador_ofertas", "risk": "safe", "notes": "queda >=10%"},
+    {"name": "smart_home", "risk": "review", "notes": "clima/portão/luzes"},
+    {"name": "local_doc_rag", "risk": "safe", "notes": "consulta knowledge_store"},
+    {"name": "mcp_manager", "risk": "review", "notes": "servidores MCP"},
+    {"name": "context_triggers", "risk": "review", "notes": "gatilhos proativos"}
+  ]
+}

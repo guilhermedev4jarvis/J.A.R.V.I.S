@@ -1,0 +1,10 @@
+{
+  "name": "hwmonitor_integration",
+  "description": "Reads CPU and GPU temperatures from HWMonitor's log/output.",
+  "file": "hwmonitor_integration.py",
+  "path": "C:\\Users\\overp\\Downloads\\jarvis_project\\plugins\\pending\\hwmonitor_integration.py",
+  "created_at": "2026-10-19T17:46:07Z",
+  "notes": "",
+  "parameters": {},
+  "sha256": "e97fac152c000b6bae9000a6d0256abb5589f26f682bf03c8445d9fb8f1d5d45"
+}

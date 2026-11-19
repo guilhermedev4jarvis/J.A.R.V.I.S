@@ -1,0 +1,25 @@
+{
+  "mode": "manual",
+  "avatar_paused": false,
+  "proactive_interval_sec": 45,
+  "max_heavy_actions": 4,
+  "background_priority": "normal",
+  "last_applied": "2026-11-05T11:09:41",
+  "history": [
+    {
+      "at": "2026-11-05T11:05:16",
+      "from": "auto",
+      "to": "performance",
+      "cpu": 9.8,
+      "mem": 24.4
+    },
+    {
+      "at": "2026-11-05T11:09:21",
+      "from": "auto",
+      "to": "performance",
+      "cpu": 5.1,
+      "mem": 24.4
+    }
+  ],
+  "updated_at": "2026-11-05T11:09:41"
+}

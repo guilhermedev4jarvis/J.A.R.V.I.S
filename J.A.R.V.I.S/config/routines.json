@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "routines": {
+    "modo_trabalho": {
+      "description": "Fecha distrações, inicia foco e abre ferramentas de trabalho",
+      "steps": [
+        {
+          "tool": "process_manager",
+          "params": {
+            "action": "list"
+          },
+          "speak": "Verificando processos"
+        },
+        {
+          "tool": "focus_timer",
+          "params": {
+            "action": "start",
+            "minutes": 25
+          },
+          "speak": "Timer de foco iniciado"
+        },
+        {
+          "tool": "open_app",
+          "params": {
+            "app_name": "Visual Studio Code"
+          },
+          "speak": "Abrindo o editor"
+        }
+      ]
+    }
+  }
+}

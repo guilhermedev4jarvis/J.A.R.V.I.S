@@ -1,0 +1,11 @@
+@echo off
+title J.A.R.V.I.S. - Servidor 24h
+cd /d "%~dp0"
+
+:loop
+echo [%date% %time%] Iniciando J.A.R.V.I.S. (Modo 24/7)...
+call .venv\Scripts\activate.bat
+python -m main
+echo [%date% %time%] Processo encerrado. Reiniciando em 3 segundos...
+timeout /t 3 /nobreak >nul
+goto loop

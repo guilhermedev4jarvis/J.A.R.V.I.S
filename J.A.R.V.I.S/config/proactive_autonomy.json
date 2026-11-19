@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "triggers_enabled": true,
+  "triggers_interval_secs": 15,
+  "trigger_cooldown_secs": 300,
+  "timeline_enabled": false,
+  "timeline_interval_secs": 120
+}

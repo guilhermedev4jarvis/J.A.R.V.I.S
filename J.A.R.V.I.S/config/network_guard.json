@@ -1,0 +1,23 @@
+{
+  "interval_good_sec": 120,
+  "last_level": "good",
+  "history": [
+    {
+      "at": "2026-11-05T11:26:05",
+      "latency_ms": 2.4,
+      "down_kb_s": 4.0,
+      "up_kb_s": 4.0,
+      "level": "good",
+      "message": "Rede boa: latência 2 ms, tráfego ↓4 KB/s ↑4 KB/s."
+    },
+    {
+      "at": "2026-11-05T12:02:47",
+      "latency_ms": 3.9,
+      "down_kb_s": 9.1,
+      "up_kb_s": 8.7,
+      "level": "good",
+      "message": "Rede boa: latência 4 ms, tráfego ↓9 KB/s ↑9 KB/s."
+    }
+  ],
+  "updated_at": "2026-11-05T12:02:47"
+}

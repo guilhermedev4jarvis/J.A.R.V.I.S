@@ -1,0 +1,484 @@
+{
+  "rules": [
+    {
+      "id": "familia_saiu_mae",
+      "enabled": true,
+      "cooldown_sec": 120,
+      "when": {
+        "event": "wifi.device_left",
+        "match": {
+          "owner_tag": "mae"
+        }
+      },
+      "actions": [
+        {
+          "type": "sentinel_patrol",
+          "params": {
+            "action": "start_away"
+          }
+        },
+        {
+          "type": "anti_sabotagem_energia",
+          "params": {
+            "action": "start"
+          }
+        }
+      ]
+    },
+    {
+      "id": "tempestade_e_queda_energia",
+      "enabled": true,
+      "cooldown_sec": 300,
+      "when": {
+        "all": [
+          {
+            "event": "weather.storm_alert"
+          },
+          {
+            "event": "power.outage_detected"
+          }
+        ]
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "⚠️ *Alerta consolidado*\nTempestade + queda de energia em Rio Preto. Ativando modo offline."
+        },
+        {
+          "type": "offline",
+          "params": {
+            "action": "enable"
+          }
+        }
+      ]
+    },
+    {
+      "id": "veiculo_conhecido_portao",
+      "enabled": true,
+      "cooldown_sec": 60,
+      "when": {
+        "event": "alpr.plate_detected",
+        "match": {
+          "is_known_vehicle": true
+        }
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "🚗 Veículo conhecido no portão: {plate} ({vehicle_info})"
+        },
+        {
+          "type": "pause_intrusion",
+          "params": {
+            "ttl": 180
+          }
+        }
+      ]
+    },
+    {
+      "id": "porteiro_conhecido_noite",
+      "enabled": true,
+      "cooldown_sec": 90,
+      "when": {
+        "event": "alpr.plate_detected",
+        "match": {
+          "is_known_vehicle": true,
+          "night": true
+        }
+      },
+      "actions": [
+        {
+          "type": "smart_home",
+          "params": {
+            "action": "garage_light_on"
+          }
+        },
+        {
+          "type": "smart_home",
+          "params": {
+            "action": "gate_open"
+          }
+        },
+        {
+          "type": "telegram",
+          "message": "🌙 Veículo conhecido à noite: {plate} ({vehicle_info}). Luz e portão acionados."
+        }
+      ]
+    },
+    {
+      "id": "rosto_familia_porta",
+      "enabled": true,
+      "cooldown_sec": 60,
+      "when": {
+        "event": "vision.known_face_detected",
+        "match": {
+          "zone": "porta_interna"
+        }
+      },
+      "actions": [
+        {
+          "type": "sentinel_patrol",
+          "params": {
+            "action": "stop"
+          }
+        },
+        {
+          "type": "telegram",
+          "message": "👋 Bem-vindo(a), {person_name}. Sentinel desarmado. {welcome_summary}"
+        }
+      ]
+    },
+    {
+      "id": "tripwire_intrusion",
+      "enabled": true,
+      "cooldown_sec": 30,
+      "when": {
+        "event": "vision.tripwire_crossed",
+        "match": {
+          "classification": "intrusion"
+        }
+      },
+      "actions": [
+        {
+          "type": "protocolo_dissuasao",
+          "params": {
+            "action": "ativar"
+          }
+        },
+        {
+          "type": "telegram",
+          "message": "🚨 *INTRUSÃO* tripwire `{tripwire_name}` em {camera_id}."
+        }
+      ]
+    },
+    {
+      "id": "unknown_vehicle_waiting",
+      "enabled": true,
+      "cooldown_sec": 45,
+      "when": {
+        "event": "alpr.unknown_vehicle_waiting"
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "🚗 Veículo desconhecido parado {duration_sec}s — placa {plate}. Contexto: {expected_delivery_context}"
+        }
+      ]
+    },
+    {
+      "id": "modo_viagem_ativado",
+      "enabled": true,
+      "cooldown_sec": 600,
+      "when": {
+        "event": "presence.extended_away_activated"
+      },
+      "actions": [
+        {
+          "type": "simulador_presenca",
+          "params": {
+            "action": "start",
+            "mode": "night"
+          }
+        },
+        {
+          "type": "sentinel_patrol",
+          "params": {
+            "action": "start_away",
+            "sensitivity": "max"
+          }
+        },
+        {
+          "type": "power_profile_manager",
+          "params": {
+            "action": "eco"
+          }
+        },
+        {
+          "type": "resource_governor",
+          "params": {
+            "action": "pause_heavy"
+          }
+        },
+        {
+          "type": "telegram",
+          "message": "🧳 *Modo viagem ativado*\nAusência prolongada detectada. Simulador de presença e economia de energia ligados."
+        }
+      ]
+    },
+    {
+      "id": "modo_viagem_desativado",
+      "enabled": true,
+      "cooldown_sec": 120,
+      "when": {
+        "event": "presence.extended_away_deactivated"
+      },
+      "actions": [
+        {
+          "type": "simulador_presenca",
+          "params": {
+            "action": "stop"
+          }
+        },
+        {
+          "type": "telegram",
+          "message": "🏠 Residência: retorno detectado. Modo viagem desativado."
+        }
+      ]
+    },
+    {
+      "id": "shopping_deal_notify",
+      "enabled": true,
+      "cooldown_sec": 30,
+      "when": {
+        "event": "shopping.deal_found"
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "🏷️ Oferta: {item_name} por R$ {price} (−{drop_pct}%). {link}"
+        }
+      ]
+    },
+    {
+      "id": "wifi_new_device_alert",
+      "enabled": true,
+      "cooldown_sec": 60,
+      "when": {
+        "event": "wifi.device_joined"
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "📡 Novo dispositivo na rede: {mac} ({device_name})"
+        }
+      ]
+    },
+    {
+      "id": "power_outage_telegram",
+      "enabled": true,
+      "cooldown_sec": 120,
+      "when": {
+        "event": "power.outage_detected"
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "⚡ Queda de energia detectada. Bateria ~{percent}%."
+        }
+      ]
+    },
+    {
+      "id": "power_restored_telegram",
+      "enabled": true,
+      "cooldown_sec": 60,
+      "when": {
+        "event": "power.restored"
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "✅ Energia restaurada ({percent}%)."
+        }
+      ]
+    },
+    {
+      "id": "storm_only_notify",
+      "enabled": true,
+      "cooldown_sec": 1800,
+      "when": {
+        "event": "weather.storm_alert"
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "🌧️ Alerta climático Rio Preto: tempestade/vento."
+        }
+      ]
+    },
+    {
+      "id": "service_healed_log",
+      "enabled": true,
+      "cooldown_sec": 30,
+      "when": {
+        "event": "system.service_healed"
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "🛠️ Self-healing recuperou: {service}"
+        }
+      ]
+    },
+    {
+      "id": "finance_budget_morning",
+      "enabled": true,
+      "cooldown_sec": 3600,
+      "when": {
+        "event": "finance.budget_alert"
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "💸 Alerta orçamento: {message}"
+        }
+      ]
+    },
+    {
+      "id": "climate_precondition_log",
+      "enabled": true,
+      "cooldown_sec": 300,
+      "when": {
+        "event": "climate.precondition"
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "❄️/🔥 Clima pré-ativado ({mode}) — {reason} T={temp}"
+        }
+      ]
+    },
+    {
+      "id": "tripwire_exit_log",
+      "enabled": true,
+      "cooldown_sec": 60,
+      "when": {
+        "event": "vision.tripwire_crossed",
+        "match": {
+          "classification": "exit"
+        }
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "🚪 Saída detectada em {tripwire_name}"
+        }
+      ]
+    },
+    {
+      "id": "alpr_unknown_immediate",
+      "enabled": true,
+      "cooldown_sec": 90,
+      "when": {
+        "event": "alpr.plate_detected",
+        "match": {
+          "is_known_vehicle": false
+        }
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "🚗 Placa desconhecida no portão: {plate}"
+        }
+      ]
+    },
+    {
+      "id": "slide_multi_power_glitch",
+      "enabled": true,
+      "cooldown_sec": 120,
+      "when": {
+        "slide": {
+          "event": "power.outage_detected",
+          "count": 2,
+          "window_sec": 300
+        }
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "⚠️ Múltiplas oscilações de energia em 5 min."
+        },
+        {
+          "type": "offline",
+          "params": {
+            "action": "enable"
+          }
+        }
+      ]
+    },
+    {
+      "id": "shopping_item_ack",
+      "enabled": true,
+      "cooldown_sec": 5,
+      "when": {
+        "event": "shopping.item_added"
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "🛒 Item na lista: {item_name}"
+        }
+      ]
+    },
+    {
+      "id": "face_owner_welcome",
+      "enabled": true,
+      "cooldown_sec": 90,
+      "when": {
+        "event": "vision.known_face_detected",
+        "match": {
+          "role": "owner"
+        }
+      },
+      "actions": [
+        {
+          "type": "sentinel_patrol",
+          "params": {
+            "action": "stop"
+          }
+        },
+        {
+          "type": "telegram",
+          "message": "👋 Bem-vindo, {person_name}."
+        }
+      ]
+    },
+    {
+      "id": "heal_rtsp_fail_cascade",
+      "enabled": true,
+      "cooldown_sec": 300,
+      "when": {
+        "event": "system.service_healed",
+        "match": {
+          "service": "rtsp"
+        }
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "📷 Stream RTSP reconectado."
+        }
+      ]
+    },
+    {
+      "id": "night_unknown_vehicle_strict",
+      "enabled": true,
+      "cooldown_sec": 120,
+      "when": {
+        "event": "alpr.unknown_vehicle_waiting"
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "⏱️ Desconhecido parado {duration_sec}s placa {plate}. {expected_delivery_context}"
+        }
+      ]
+    },
+    {
+      "id": "wifi_mae_join",
+      "enabled": true,
+      "cooldown_sec": 60,
+      "when": {
+        "event": "wifi.device_joined",
+        "match": {
+          "owner_tag": "mae"
+        }
+      },
+      "actions": [
+        {
+          "type": "telegram",
+          "message": "📍 Dispositivo da mãe na rede."
+        }
+      ]
+    }
+  ]
+}

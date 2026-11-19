@@ -1,0 +1,35 @@
+{
+  "version": 3,
+  "defaults": {
+    "evidence_dir": "memory/audit/evidencias",
+    "camera_load_delay_sec": 3,
+    "silent_190": true
+  },
+  "protocolos": {
+    "190": {
+      "descricao": "Emergência imediata e silenciosa: abre app de câmeras, analisa a tela e envia print + pedido de socorro por WhatsApp. SEM ligação telefônica, SEM biometria, SEM PIN, SEM confirmação.",
+      "ignorar_owner_gate": true,
+      "ignorar_confirmacao": true,
+      "critico": true,
+      "silencioso": true,
+      "acoes": [
+        "abrir_cameras",
+        "capturar_e_analisar",
+        "enviar_socorro_whatsapp"
+      ]
+    },
+    "demo": {
+      "descricao": "Demonstração segura: TTS, diagnóstico, câmeras e descrição em voz alta — sem mensagem de emergência.",
+      "ignorar_owner_gate": true,
+      "ignorar_confirmacao": true,
+      "critico": false,
+      "silencioso": false,
+      "acoes": [
+        "anunciar_demo",
+        "diagnostico_sistema",
+        "demo_cameras",
+        "resumo_tatico"
+      ]
+    }
+  }
+}

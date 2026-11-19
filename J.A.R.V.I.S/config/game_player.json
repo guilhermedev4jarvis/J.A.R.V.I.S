@@ -1,0 +1,13 @@
+{
+  "macros": {
+    "jump": [
+      {
+        "type": "press",
+        "key": "space"
+      }
+    ]
+  },
+  "dino_region": null,
+  "last_mode": null,
+  "updated_at": "2026-11-05T11:13:39"
+}

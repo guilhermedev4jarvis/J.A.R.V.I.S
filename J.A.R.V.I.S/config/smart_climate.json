@@ -1,0 +1,34 @@
+{
+  "city": "São José do Rio Preto",
+  "default_provider": "generic",
+  "device_alias": "ar_quarto",
+  "model": "42M8QA24M5",
+  "hot_threshold_c": 27.0,
+  "cold_threshold_c": 16.0,
+  "ideal_min_c": 20.0,
+  "ideal_max_c": 24.0,
+  "target_cool_temp_c": 23.0,
+  "target_heat_temp_c": 24.0,
+  "sleep_hour": 22,
+  "sleep_minute": 30,
+  "pre_sleep_minutes": 20,
+  "trusted_plates": [
+    "FIK5J12"
+  ],
+  "schedules": [
+    {
+      "name": "ligar_noite",
+      "time": "22:00",
+      "action": "turn_on",
+      "mode": "cool",
+      "target_temp_c": 23.0,
+      "enabled": true
+    },
+    {
+      "name": "desligar_madrugada",
+      "time": "06:00",
+      "action": "turn_off",
+      "enabled": true
+    }
+  ]
+}

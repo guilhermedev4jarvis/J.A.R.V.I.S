@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "endpoints": {
+    "alerta_celular": {
+      "url": "https://ntfy.sh/jarvis-placeholder",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "text/plain"
+      },
+      "body_template": "{{message}}",
+      "requires_owner_gate": true,
+      "description": "Placeholder ntfy topic — replace with your topic"
+    },
+    "discord_alerta": {
+      "url": "https://discord.com/api/webhooks/REPLACE_ID/REPLACE_TOKEN",
+      "method": "POST",
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body_template": "{\"content\": \"{{message}}\"}",
+      "requires_owner_gate": true,
+      "description": "Placeholder Discord webhook"
+    },
+    "home_assistant_exemplo": {
+      "url": "http://homeassistant.local:8123/api/services/light/toggle",
+      "method": "POST",
+      "headers": {
+        "Authorization": "Bearer {{secret:ha_token}}",
+        "Content-Type": "application/json"
+      },
+      "body_template": "{\"entity_id\": \"light.quarto\"}",
+      "requires_owner_gate": true,
+      "allow_private_hosts": true,
+      "description": "Exemplo Home Assistant — exige ha_token no vault e allow_private_hosts"
+    }
+  }
+}

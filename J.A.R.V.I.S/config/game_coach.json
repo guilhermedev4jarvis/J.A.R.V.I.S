@@ -1,0 +1,28 @@
+{
+  "default_game": "Fortnite",
+  "interval_sec": 180,
+  "history": [
+    {
+      "at": "2026-11-05T11:26:06",
+      "game": "Fortnite",
+      "category": "positioning",
+      "source": "fallback",
+      "tip": "Priorize high ground e cover antes de trocar tiro; ângulo > mira perfeita."
+    },
+    {
+      "at": "2026-11-05T11:26:06",
+      "game": "Minecraft",
+      "category": "loot",
+      "source": "fallback",
+      "tip": "Priorize shield e mobilidade antes de arma 'bonita' com pouco utilitário."
+    },
+    {
+      "at": "2026-11-05T12:02:47",
+      "game": "Fortnite",
+      "category": "building",
+      "source": "fallback",
+      "tip": "Wall em sua frente + edit window é mais seguro que peek largo."
+    }
+  ],
+  "updated_at": "2026-11-05T12:02:47"
+}
