@@ -29,3 +29,25 @@ python -m main
 cd pasta\J.A.R.V.I.S
 .\.venv\Scripts\Activate.ps1
 python -m main
+
+--- NOVAS ACTIONS (SECURITY / AI CORE / FINANCE / PRODUCTIVITY) ---
+- Ativar detector de encomendas no portao / Verificar pacote no portao
+- Auditar anomalias das cameras / Verificar movimento estranho hoje
+- Verificar intrusos no wifi / Bloquear dispositivo desconhecido na rede
+- Rodar auditoria noturna de codigo / Gerar relatorio de performance das actions
+- Mudar tom de voz para alerta / Ativar voz modo noturno
+- Criar branch de experimento / Salvar checkpoint git / Fazer rollback do codigo
+- Escanear nota fiscal / Registrar cupom fiscal por qr code
+- Cacar assinaturas esquecidas / Verificar servicos recorrentes nao usados
+- Briefing matinal / Resumo do meu dia
+
+--- NOVAS ACTIONS (SECURITY / AI CORE / FINANCE / PRODUCTIVITY) ---
+- Ativar detector de encomendas no portao / Verificar pacote no portao
+- Auditar anomalias das cameras / Verificar movimento estranho hoje
+- Verificar intrusos no wifi / Bloquear dispositivo desconhecido na rede
+- Rodar auditoria noturna de codigo / Gerar relatorio de performance das actions
+- Mudar tom de voz para alerta / Ativar voz modo noturno
+- Criar branch de experimento / Salvar checkpoint git / Fazer rollback do codigo
+- Escanear nota fiscal / Registrar cupom fiscal por qr code
+- Cacar assinaturas esquecidas / Verificar servicos recorrentes nao usados
+- Briefing matinal / Resumo do meu dia
